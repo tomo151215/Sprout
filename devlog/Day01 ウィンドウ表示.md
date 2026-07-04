@@ -97,18 +97,85 @@ frame.setVisible(true);
 
 ```java
 public final class GameSettings {
-    public final String title;
-    public final int width;
-    public final int height;
 
-    public GameSettings(String title, int width, int height) {
-        this.title = title;
+    private final int width;
+    private final int height;
+    private final String title;
+    private final boolean isVisible;
+    private final boolean centerOnScreen;
+    private final boolean exitOnClose;
+
+    public GameSettings(int width, int height, String title, boolean isVisible, boolean centerOnScreen,
+            boolean exitOnClose) {
         this.width = width;
         this.height = height;
+        this.title = title;
+        this.isVisible = isVisible;
+        this.centerOnScreen = centerOnScreen;
+        this.exitOnClose = exitOnClose;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public boolean isVisible() {
+        return isVisible;
+    }
+
+    public boolean isCenterOnScreen() {
+        return centerOnScreen;
+    }
+
+    public boolean isExitOnClose() {
+        return exitOnClose;
+    }
+
+}
+
+```
+
+将来ここにFPS、スケール、音声ON/OFF、デバッグ表示などを追加します。この設定を以下のGameWindowクラスに渡し、その設定の基づいてFrameを生成するように記述します。
+```java
+import javax.swing.JFrame;
+
+public class GameFrame {
+    private final JFrame frame = new JFrame();
+
+    public GameFrame(GameSettings set) {
+        frame.setTitle(set.getTitle());
+        frame.setSize(set.getWidth(), set.getHeight());
+
+        if (set.isExitOnClose()) {
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        } else {
+            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        }
+        
+        if (set.isCenterOnScreen()) {
+            frame.setLocationRelativeTo(null);
+        }
+
+        frame.setVisible(set.isVisible());
     }
 }
 ```
-
-将来ここにFPS、スケール、音声ON/OFF、デバッグ表示などを追加します。
+mainメソッドでは以下の様に記述してフレームを表示する。非常にすっきりしていることがわかります。
+```java
+    public static void main(String[] args) {
+        GameSettings set = new GameSettings(800, 600, "Sample Frame", true, true, true);
+        SwingUtilities.invokeLater(() -> {
+            new GameFrame(set);
+        });
+    }
+```
 
 
