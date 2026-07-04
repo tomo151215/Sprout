@@ -1,2 +1,2 @@
 # Sprout
-JavaによるゲームエンジンSproutです。
+Javaによる簡易的なゲームエンジンSproutです。Java　Swingでゲームを作成および学習するために開発しました。
