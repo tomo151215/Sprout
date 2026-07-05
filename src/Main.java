@@ -11,9 +11,7 @@ public class Main {
             window.show();
             GameRenderer renderer = new GameRenderer(window.getCanvas());
             List<Renderable> r = new ArrayList<>();
-            for (int i = 0; i < 1000; i++) {
-                renderer.render(r);
-            }
+            renderer.render(r);
         });
     }
 }
