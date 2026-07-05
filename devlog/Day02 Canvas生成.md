@@ -67,7 +67,6 @@ public class GameWindow {
 
 ```java
 canvas.setPreferredSize(new Dimension(set.getWidth(), set.getHeight()));
-
 ```
 
 ### `setFocusable` (キーボード入力の受付)
@@ -76,7 +75,6 @@ canvas.setPreferredSize(new Dimension(set.getWidth(), set.getHeight()));
 
 ```java
 canvas.setFocusable(true);
-
 ```
 
 ### `setResizable` (ウィンドウ枠の可変設定)
@@ -86,7 +84,6 @@ canvas.setFocusable(true);
 
 ```java
 frame.setResizable(set.getIsResizeable());
-
 ```
 
 ### `pack` (サイズの最終調整と確定)
@@ -97,7 +94,6 @@ frame.setResizable(set.getIsResizeable());
 ```java
 frame.add(canvas);
 frame.pack();
-
 ```
 
 ---
@@ -119,7 +115,6 @@ frame.pack();
 
 ```java
 canvas.requestFocusInWindow();
-
 ```
 
 このメソッドはCanvasにフォーカスを要求するものですが、**画面が完全に表示される前（コンストラクタ内など）に呼んでも失敗します。**
