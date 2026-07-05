@@ -1,10 +1,19 @@
+import java.util.List;
+import java.util.ArrayList;
+
 import javax.swing.SwingUtilities;
 
 public class Main {
     public static void main(String[] args) {
         GameSettings set = new GameSettings(800, 600, "Sample Frame", true, true, true, false);
         SwingUtilities.invokeLater(() -> {
-            new GameWindow(set).show();
+            GameWindow window = new GameWindow(set);
+            window.show();
+            GameRenderer renderer = new GameRenderer(window.getCanvas());
+            List<Renderable> r = new ArrayList<>();
+            for (int i = 0; i < 1000; i++) {
+                renderer.render(r);
+            }
         });
     }
 }
