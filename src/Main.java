@@ -11,7 +11,12 @@ public class Main {
             window.show();
             GameRenderer renderer = new GameRenderer(window.getCanvas());
             List<Renderable> r = new ArrayList<>();
-            renderer.render(r);
+            List<Updatable> u = new ArrayList<>();
+            MovingBox box = new MovingBox();
+            r.add(box);
+            u.add(box);
+            GameLoop loop = new GameLoop(60, renderer, r, u);
+            loop.start();
         });
     }
 }

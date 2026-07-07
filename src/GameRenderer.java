@@ -16,12 +16,13 @@ public class GameRenderer {
     public void render(List<Renderable> renderables) {
         Graphics g = bs.getDrawGraphics();
         try {
+            g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
             // 描画内容
             for (Renderable r : renderables) {
                 r.draw(g);
             }
         } finally {
-            //リソース解放
+            // リソース解放
             g.dispose();
         }
 
