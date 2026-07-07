@@ -61,7 +61,6 @@ public class GameLoop implements Runnable {
             } else {
                 sleep();
             }
-
         }
     }
 
