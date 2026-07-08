@@ -9,7 +9,7 @@ public class GameRenderer {
 
     public GameRenderer(Canvas canvas) {
         this.canvas = canvas;
-        this.canvas.createBufferStrategy(2);
+        this.canvas.createBufferStrategy(3);
         this.bs = this.canvas.getBufferStrategy();
     }
 

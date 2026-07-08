@@ -15,7 +15,7 @@ public class Main {
             MovingBox box = new MovingBox();
             r.add(box);
             u.add(box);
-            GameLoop loop = new GameLoop(60, renderer, r, u);
+            GameLoop loop = new GameLoop(100, renderer, r, u);
             loop.start();
         });
     }
