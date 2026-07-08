@@ -151,42 +151,25 @@ while (accumulator >= nsPerUpdate) {
 }
 ```
 
-//ここから再開
 #### なぜifではなくwhileを使うのか
-
-ここで重要なのは、`if` ではなく `while` を使っていることです。
-
-もし次のように `if` を使った場合、1回のループで `update()` は最大1回しか実行されません。
-
+ここで重要なのは、`if` ではなく `while` を使っていることです。もし次のように `if` を使った場合、1回のループで `update()` は最大1回しか実行されません。
 ```java
 if (accumulator >= nsPerUpdate) {
     update();
     accumulator -= nsPerUpdate;
 }
 ```
-
-しかし、処理が一時的に重くなって、3回分の更新時間がたまっていた場合、本来なら `update()` を3回実行する必要があります。
-
-そこで、`while` を使います。
-
+しかし、処理が一時的に重くなり、ゲームループが回るまでの間に3回分の更新時間が経過してしまうことがあります。その場合、accumulator には3回分の更新時間が蓄積されています。本来なら、その3回分のゲーム更新を行わなければゲーム内の時間が現実の時間より遅れてしまいます。そこで、`while` を使います。
 ```java
 while (accumulator >= nsPerUpdate) {
     update();
     accumulator -= nsPerUpdate;
+    updated = true;
 }
 ```
-
 これにより、`accumulator` にたまっている時間の分だけ、必要な回数 `update()` を実行できます。
 
-例えば、1回の更新時間が16.67ミリ秒で、`accumulator` に50ミリ秒たまっていた場合、約3回分の更新時間がたまっていることになります。
-
-その場合、この `while` 文によって `update()` が3回実行されます。
-
-これにより、処理落ちが発生しても、ゲーム内時間が現実時間から大きくずれにくくなります。
-
----
-
-## updateされたときだけrenderする
+#### updateされたときだけrenderする
 
 ```java
 if (updated) {
@@ -195,180 +178,21 @@ if (updated) {
     sleep();
 }
 ```
-
-このGameLoopでは、`update()` が1回以上実行されたときだけ `render()` を呼び出します。
-
-`updated` が `true` の場合は、このループ内で `update()` が行われています。
-
-つまり、ゲームの状態が変化しています。
-
-そのため、画面を描画し直します。
-
+このGameLoopでは、`update()` が1回以上実行されたときだけ `render()` を呼び出します。`updated` が `true` の場合は、このループ内で `update()` が行われています。つまり、ゲームの状態が変化しているので、画面を描画し直します。
+一方、`updated` が `false` の場合は、まだ1回分の更新時間がたまっていないということです。つまり、ゲームの状態は前回の描画時から変わっていません。そのため、このタイミングで描画しても、基本的には同じ画面を描くだけになります。そこで、無駄にCPUを使い続けないように `sleep()` を呼び出します。
 ```java
-render();
-```
-
-一方、`updated` が `false` の場合は、まだ1回分の更新時間がたまっていないということです。
-
-つまり、ゲームの状態は前回の描画時から変わっていません。
-
-そのため、このタイミングで描画しても、基本的には同じ画面を描くだけになります。
-
-そこで、無駄にCPUを使い続けないように `sleep()` を呼び出します。
-
-```java
-sleep();
-```
-
-このように、`update()` が発生したときだけ `render()` する方式を、ここでは **更新同期描画型** と呼びます。
-
----
-
-## このGameLoopの処理の流れ
-
-このGameLoopの流れをまとめると、次のようになります。
-
-```text
-1. 現在時刻を取得する
-2. 前回のループからの経過時間を求める
-3. 経過時間を accumulator にためる
-4. accumulator に1回分の更新時間がたまっていれば update() する
-5. 必要なら update() を複数回実行する
-6. update() が1回以上実行された場合だけ render() する
-7. update() するほど時間がたまっていなければ sleep() する
-8. running が true の間、これを繰り返す
-```
-
----
-
-## このGameLoopの特徴
-
-このGameLoopには、次のような特徴があります。
-
-```text
-update() の間隔は固定される
-render() は update() が行われたときだけ実行される
-ゲーム内時間がPC性能に依存しにくい
-無駄な描画を抑えやすい
-処理が重い場合は update() を複数回実行して追いつこうとする
-```
-
-特に重要なのは、`update()` の間隔が固定されていることです。
-
-キャラクターの移動や当たり判定を固定間隔で処理できるため、ゲームの挙動が安定しやすくなります。
-
----
-
-## 可変時間ステップ型との違い
-
-このGameLoopは、可変時間ステップ型ではありません。
-
-可変時間ステップ型では、前回からの経過時間を `deltaTime` として `update()` に渡し、その時間に応じて移動量などを変えます。
-
-例えば、可変時間ステップ型では次のように書きます。
-
-```java
-double deltaTime = elapsed / 1_000_000_000.0;
-update(deltaTime);
-render();
-```
-
-この場合、1回の `update()` で進む量が、経過時間によって変化します。
-
-一方、今回のGameLoopでは、`update()` に経過時間を渡していません。
-
-```java
-update();
-```
-
-代わりに、次のようにして、一定時間がたまるたびに `update()` を1回実行しています。
-
-```java
-while (accumulator >= nsPerUpdate) {
-    update();
-    accumulator -= nsPerUpdate;
-}
-```
-
-つまり、今回の方式は、
-
-```text
-1回の update() で進めるゲーム内時間は常に一定
-```
-
-という考え方です。
-
-そのため、このGameLoopは **固定時間ステップ型** です。
-
----
-
-## renderを毎回呼ぶ固定時間ステップ型との違い
-
-固定時間ステップ型には、`render()` を毎ループ呼ぶタイプもあります。
-
-例えば、次のような形です。
-
-```java
-while (running) {
-    long now = System.nanoTime();
-    long elapsed = now - lastTime;
-    lastTime = now;
-
-    accumulator += elapsed;
-
-    while (accumulator >= nsPerUpdate) {
-        update();
-        accumulator -= nsPerUpdate;
+    private void sleep() {
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
-
-    render();
-}
 ```
+このように、`update()` が発生したときだけ `render()` する方式を、ここでは **更新同期描画型** と呼びます。したがって、今回のGameLoopは **固定時間ステップ型かつ更新同期描画型** といえます。
 
-このタイプでは、`update()` は固定間隔で行い、`render()` はループのたびに呼び出します。
-
-つまり、
-
-```text
-update() は固定時間ステップ
-render() は可能な範囲で繰り返す
-```
-
-という形です。
-
-一方、今回のGameLoopでは、次のようになっています。
-
-```java
-if (updated) {
-    render();
-} else {
-    sleep();
-}
-```
-
-そのため、`update()` が発生しなかったループでは描画しません。
-
-つまり、今回のGameLoopは、
-
-```text
-update() は固定時間ステップ
-render() は update() に同期する
-```
-
-という構造です。
-
-したがって、今回のGameLoopは **固定時間ステップ型かつ更新同期描画型** といえます。
-
----
-
-## 注意点1：処理が重すぎる場合
-
-このGameLoopでは、処理が重くなった場合、たまった時間に追いつくために `update()` が連続で実行されます。
-
-これはゲーム内時間のずれを小さくするためには有効ですが、処理が重すぎる場合には注意が必要です。
-
-なぜなら、次のような悪循環が起こる可能性があるからです。
-
+## 注意：処理が重すぎる場合
+このGameLoopでは、処理が重くなった場合、たまった時間に追いつくために `update()` が連続で実行されます。これはゲーム内時間のずれを小さくするためには有効ですが、処理が重すぎる場合には注意が必要です。なぜなら、次のような悪循環が起こる可能性があるからです。
 ```text
 処理が重い
 ↓
@@ -380,16 +204,10 @@ update() を何回も実行する
 ↓
 もっと時間がたまる
 ```
-
-このような状態は、一般に **spiral of death** と呼ばれることがあります。
-
-対策としては、1回のループで実行する `update()` の最大回数を制限する方法があります。
-
-例えば、次のようにします。
-
+このような状態は、一般に **spiral of death** と呼ばれることがあります。対策としては、1回のループで実行する `update()` の最大回数を制限する方法があります。
 ```java
 int updateCount = 0;
-int maxUpdatesPerFrame = 5;
+int maxUpdatesPerFrame = 5;  // 1フレームで実行するupdate()の上限回数
 
 while (accumulator >= nsPerUpdate && updateCount < maxUpdatesPerFrame) {
     update();
@@ -399,87 +217,24 @@ while (accumulator >= nsPerUpdate && updateCount < maxUpdatesPerFrame) {
 }
 
 if (updateCount == maxUpdatesPerFrame) {
+    // update()が追いつかない状態（Spiral of Death）を防ぐため、
+    // 残りの更新時間を破棄して次のフレームから再開する
     accumulator = 0.0;
 }
 ```
+これにより、処理が重くなった場合でも、1回のループで無制限に `update()` が実行されることを防げます。ただし、`accumulator = 0.0;` とすると、たまっていた時間を捨てることになります。そのため、ゲーム内時間が一時的に現実時間から遅れる可能性があります。しかし、無限に `update()` が連続実行されてゲームが固まるよりは安全です。
 
-これにより、処理が重くなった場合でも、1回のループで無制限に `update()` が実行されることを防げます。
-
-ただし、`accumulator = 0.0;` とすると、たまっていた時間を捨てることになります。
-
-そのため、ゲーム内時間が一時的に現実時間から遅れる可能性があります。
-
-しかし、無限に `update()` が連続実行されてゲームが固まるよりは安全です。
-
----
-
-## 注意点2：Swingでの描画
-
-Swingでゲームを作る場合、描画方法によって注意点が変わります。
-
-`Canvas` と `BufferStrategy` を使って自前で描画する場合は、GameLoopのスレッドから描画処理を呼び出す構成にしやすいです。
-
-一方、`JPanel` の `paintComponent()` を使う場合は、Swingの描画はEDT上で行われるため、GameLoopのスレッドから直接 `paintComponent()` を呼び出すのではなく、`repaint()` を呼び出して描画を依頼する形にします。
-
-つまり、Swingでは次の点に注意します。
-
-```text
-EDTをGameLoopで占有しない
-Swingコンポーネントを別スレッドから直接操作しすぎない
-Canvas + BufferStrategy ならGameLoopから能動的に描画しやすい
-JPanel + paintComponent なら repaint() を使って描画を依頼する
-```
-
----
-
-## 注意点3：runningの扱い
-
-`running` は、GameLoopを続けるか止めるかを管理する変数です。
-
+## 注意：`running` の扱い
+`running` は、GameLoopを続けるか止めるかを管理するフラグです。
 ```java
 while (running) {
     ...
 }
 ```
-
-別スレッドから `running` の値を変更してGameLoopを止める場合は、スレッド間で値の変更が正しく見えるようにする必要があります。
-
-簡単な方法としては、`running` を `volatile` にします。
-
+GameLoopは別スレッドで実行されることが多く、`running` の値は別のスレッドから変更される場合があります。Javaでは、各スレッドが変数の値をCPUのキャッシュやレジスタに保持することがあるため、あるスレッドで変更した値が、他のスレッドからすぐに見えない場合があります。
+そのため、`running` は `volatile` を付けて、ほかのスレッドからの可視性を上げて宣言するのが一般的です。
 ```java
 private volatile boolean running;
 ```
+`volatile` を付けることで、あるスレッドで変更した `running` の値が他のスレッドからも確実に見えるようになり、GameLoopを安全に停止できます。
 
-`volatile` を付けることで、あるスレッドで変更した `running` の値が、GameLoop側のスレッドからも見えやすくなります。
-
----
-
-## まとめ
-
-今回のGameLoopは、**固定時間ステップ型かつ更新同期描画型** のGameLoopです。
-
-`System.nanoTime()` を使って現実時間の経過を測定し、その経過時間を `accumulator` にためます。
-
-そして、`accumulator` に1回分の更新時間である `nsPerUpdate` がたまった場合にだけ `update()` を実行します。
-
-この仕組みにより、ゲーム内の状態更新はPCの性能に依存しにくくなります。
-
-また、このコードでは、`update()` が1回以上実行された場合にだけ `render()` を呼び出します。
-
-そのため、描画は更新処理に同期して行われます。
-
-このGameLoopの構造を簡単に表すと、次のようになります。
-
-```text
-現実時間を測る
-↓
-経過時間を accumulator にためる
-↓
-一定時間たまったら update() する
-↓
-update() した場合だけ render() する
-↓
-まだ update() する時間でなければ sleep() する
-```
-
-この方式を使うことで、ゲームの状態更新を安定させつつ、不要な描画やCPU使用をある程度抑えることができます。
