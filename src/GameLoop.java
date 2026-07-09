@@ -27,8 +27,8 @@ public class GameLoop implements Runnable {
 
     public void stop() {
         running = false;
-        
-        if (th != null && Thread.currentThread() != th) { //デッドロック回避
+
+        if (th != null && Thread.currentThread() != th) { // デッドロック回避
             try {
                 th.join();
             } catch (InterruptedException e) {
@@ -48,12 +48,19 @@ public class GameLoop implements Runnable {
             long elapsed = now - lastTime;
             lastTime = now;
             accumulator += elapsed;
+            int maxUpdateCount = 5;
+            int updateCount = 0;
 
             boolean updated = false; // updateしたかどうかのフラグ
-            while (accumulator >= nsPerUpdate) {
+            while (accumulator >= nsPerUpdate && updateCount < maxUpdateCount) {
                 update();
                 accumulator -= nsPerUpdate;
                 updated = true;
+                updateCount++;
+            }
+
+            if (updateCount == maxUpdateCount) {
+                accumulator = 0.0;
             }
 
             if (updated) {
