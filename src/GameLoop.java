@@ -16,7 +16,7 @@ public class GameLoop implements Runnable {
         this.updatables = updatables;
     }
 
-    public void start() {
+    public synchronized void start() {
         if (running) {
             return;
         }
@@ -25,7 +25,7 @@ public class GameLoop implements Runnable {
         th.start();
     }
 
-    public void stop() {
+    public synchronized void stop() {
         running = false;
 
         if (th != null && Thread.currentThread() != th) { // デッドロック回避
