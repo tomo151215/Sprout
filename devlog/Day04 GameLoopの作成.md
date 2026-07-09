@@ -179,6 +179,69 @@ if (updated) {
 ```
 このように、`update()` が発生したときだけ `render()` する方式を、ここでは **更新同期描画型** と呼びます。したがって、今回のGameLoopは **固定時間ステップ型かつ更新同期描画型** といえます。
 
+## `start()`メソッドと`stop()`メソッド
+スレッドをスタートする、ストップするためのメソッドを作成します。
+### `start()`メソッド
+```java
+    public synchronized void start() {
+        if (running) {
+            return;
+        }
+        running = true;
+        th = new Thread(this);
+        th.start();
+    }
+```
+`start()`メソッドを呼び出すと、ゲームループを実行中であることを表すフラグ`running`を`true`に設定し、`Thread`オブジェクトを生成して`Thread.start()`を呼び出します。`Thread.start()`が呼ばれると新しいスレッドが開始され、そのスレッド上で`run()`メソッドが実行されます。また、ゲームループがすでに開始されている場合に重複して起動しないよう、最初に`if (running) { return; }`で`running`の状態を確認しています。
+
+また、`start()`メソッドは複数のスレッドから同時に呼び出される可能性があるため、`synchronized`を付けない場合は以下のような不具合が発生する可能性があります。2つのスレッドA、Bがほぼ同時に`start()`を実行するとします。例えば、次のような実行順序になることがあります。
+```text
+Thread A
+if (running)   // false
+
+（OSがThread Bへ切り替える）
+
+Thread B
+if (running)   // Thread Aもまだrunning=trueを書き込んでいないためfalseになる
+running = true
+Thread.start()
+
+（Thread Aへ戻る）
+
+Thread A
+running = true
+Thread.start()
+```
+このように、両方のスレッドが`running`を`false`と判定してしまうと、ゲームループスレッドが2本起動する可能性があります。その結果、`update()`が1フレーム中に2回実行されるなど、ゲームの進行速度が速くなる、CPU使用率が上昇するなどの意図しない動作を引き起こすおそれがあります。
+
+このような競合を防ぐため、`start()`メソッドには`synchronized`修飾子を付けています。`synchronized`を付けると、同じオブジェクトの`start()`メソッドをあるスレッドが実行中は、他のスレッドはその処理が終わるまで待機します。そのため、`if (running)`の判定から`running = true`の設定までが排他的に実行され、ゲームループが重複して起動することを防げます。
+
+### `stop()`メソッド
+
+ゲームループを安全に停止し、ゲームループスレッドの終了を待つためのメソッドです。
+
+```java
+public synchronized void stop() {
+    running = false;
+
+    if (th != null && Thread.currentThread() != th) {
+        try {
+            th.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+}
+```
+まず、`running = false;`によってゲームループの終了を指示します。`while(running){}`の、`running`が`false`になると次回のループ判定で`while`を抜け、`run()`メソッドが終了します。
+
+次に、`th != null`でゲームループスレッドが生成済みであることを確認しています。`th`が`null`の状態で`join()`を呼び出すと`NullPointerException`が発生するためです。また、`Thread.currentThread() != th`では、現在`stop()`を実行しているスレッドがゲームループスレッド自身ではないことを確認しています。なぜなら、`th.join()`はゲームループスレッドが完全に終了するまで待機するメソッドであり、ゲームループスレッド自身の中でこれを呼び出すと永遠と待機し続けて終了できないデッドロックが発生するからです。
+
+`Thread.currentThread().interrupt()`は、Javaのスレッドで割り込み（interrupt）の情報を失わないようにするためのコードです。`th.join()`実行中に`InterruptedException`を検知すると、Javaは割り込みフラグを自動的にクリアします。ゆえに、`Thread.currentThread().interrupt()`で再び割り込みフラグを立たせることで、後続の処理に「割り込みフラグが立った」という事実を残すことができます。Javaでは慣習的な手法です。
+
+なお、`start()`と同様に`stop()`にも`synchronized`を付けることで、複数のスレッドから同時に呼び出された場合でも競合が発生しないようにしています。
+
+
 ## 注意：処理が重すぎる場合
 このGameLoopでは、処理が重くなった場合、たまった時間に追いつくために `update()` が連続で実行されます。これはゲーム内時間のずれを小さくするためには有効ですが、処理が重すぎる場合には注意が必要です。なぜなら、次のような悪循環が起こる可能性があるからです。
 ```text
