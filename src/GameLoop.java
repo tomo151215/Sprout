@@ -1,6 +1,6 @@
 import java.util.List;
 
-public class GameLoop implements Runnable {
+public final class GameLoop implements Runnable {
     private final int targetUps;
     private final GameRenderer renderer;
     private final List<Renderable> renderables;
