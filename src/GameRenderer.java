@@ -18,7 +18,8 @@ public class GameRenderer {
     public void render(List<Renderable> renderables, double alpha) {
         Graphics g = bs.getDrawGraphics();
         try {
-            g.setColor(Color.WHITE);  // 背景クリアの色指定
+            // 背景クリア
+            g.setColor(Color.WHITE);  
             g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
             // 描画内容
             for (Renderable r : renderables) {

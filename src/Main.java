@@ -12,11 +12,12 @@ public class Main {
             GameRenderer renderer = new GameRenderer(window.getCanvas());
             List<Renderable> r = new ArrayList<>();
             List<Updatable> u = new ArrayList<>();
-            MovingBox box = new MovingBox();
-            r.add(box);
-            u.add(box);
-            GameLoop loop = new GameLoop(144, renderer, r, u);
-            loop.start();
+
+            // 5. レンダラーとゲームループの初期化
+            GameLoop gameLoop = new GameLoop(120, renderer, r, u);
+
+            // 6. ゲームスタート！
+            gameLoop.start();
         });
     }
 }
