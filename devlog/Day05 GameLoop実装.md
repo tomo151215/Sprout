@@ -13,6 +13,43 @@ while (running) {
 ```
 `update()` は、ゲームの状態を更新する処理です。具体的には座標更新、当たり判定、スコア更新などを行います。一方、`render()` は、`update()` によって更新されたゲームの状態を画面に描画する処理です。
 
+### `Updatable`インタフェース
+ゲームには、プレイヤー、敵、弾、アイテムなど、毎フレーム状態を更新するオブジェクトが多数存在します。これらすべての更新処理を `GameLoop` に直接書いてしまうと、`GameLoop` が巨大になり、保守が難しくなります。そこで今回は、更新可能なオブジェクトが実装する共通のインタフェースとして `Updatable` を用意します。
+
+```java
+public interface Updatable {
+    void update();
+}
+```
+`Updatable` を実装したクラスは、それぞれの `update()` メソッドに自分自身の更新処理を書きます。例えば、プレイヤーなら移動処理、弾なら移動や寿命の判定などを実装します。
+
+### `update()`メソッド
+GameLoopの `update()` メソッドでは、自分でゲームの処理を書くのではなく、登録されているすべての `Updatable` オブジェクトの `update()` を順番に呼び出します。
+```java
+private void update() {
+    for (Updatable u : updatables) {
+        u.update();
+    }
+}
+```
+`updatables` には、プレイヤーや敵など `Updatable` を実装したオブジェクトが登録されています。ゲームループから見ると、それぞれがどのような更新を行うかを知る必要はありません。「更新できるオブジェクト」であることだけ分かっていればよく、共通の `update()` を呼び出すだけでゲーム全体の状態を更新できます。
+
+### `render()`メソッド
+
+描画も同様に、GameLoopは描画処理そのものを持ちません。描画は `GameRenderer` に委譲します。
+
+```java
+private void render() {
+    renderer.render(renderables);
+}
+```
+`renderables` には描画対象のオブジェクトが登録されており、`GameRenderer` がそれらを順番に描画します。このように、
+* **GameLoop** … 更新と描画のタイミングを管理する
+* **Updatable** … ゲームの状態を更新する
+* **Renderable** … 描画内容を提供する
+* **GameRenderer** … 実際に描画する
+というように役割を分離することで、それぞれのクラスの責務が明確になり、保守や機能追加がしやすい設計になります。
+
 ### 単純なGameLoopの問題点
 
 先ほどのような単純なGameLoopには問題があります。この書き方では、`update()` と `render()` が可能な限り高速に繰り返されます。そのため、1秒間に何回ループするかはPCの性能に依存します。もし `update()` が呼ばれるたびにキャラクターを1ピクセル動かすような処理を書いていた場合、高性能なPCではキャラクターが非常に速く動き、低性能なPCではキャラクターが遅く動いてしまいます。
@@ -89,7 +126,7 @@ public void run() {
 このコードでは、現実時間の経過を `System.nanoTime()` で測定し、その経過時間を `accumulator` にためています。そして、`accumulator` に1回分の更新時間がたまった場合にだけ `update()` を実行します。さらに、`update()` が1回以上実行された場合だけ `render()` を呼び出します。
 
 #### nsPerUpdate
-`nsPerUpdate`(nano second per update) は、`update()` を1回実行するために必要な時間間隔です。１秒当たりtargetUps回 Updateされるので、１回のUpdate当たり`1 / targetUps`秒の間隔が必要と分かります。1秒は`1000000000`ミリ秒であることに注意してください。`System.nanoTime()` はナノ秒単位で時間を扱うため、ここでもナノ秒単位で計算します。
+`nsPerUpdate`(nano second per update) は、`update()` を1回実行するために必要な時間間隔です。１秒当たりtargetUps回 Updateされるので、１回のUpdate当たり`1 / targetUps`秒の間隔が必要と分かります。1秒は`1000000000`ナノ秒であることに注意してください。`System.nanoTime()` はナノ秒単位で時間を扱うため、ここでもナノ秒単位で計算します。
 ```java
 final double nsPerUpdate = 1_000_000_000.0 / targetUps;
 ```
