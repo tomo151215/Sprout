@@ -1,4 +1,4 @@
-# Day02: GameWindowクラスの実装（JFrameとCanvasの統合）
+# Day03: GameWindowクラスの実装（JFrameとCanvasの統合）
 
 これまでの `GameFrame` を発展させ、OS上のウィンドウ枠を管理する `JFrame` と、実際のゲーム画面を描画する `Canvas` をひとつのクラス（`GameWindow`）に統合します。
 この設計により、ウィンドウサイズと実際のゲーム描画領域のサイズを正確に分離して管理できるようになります。
