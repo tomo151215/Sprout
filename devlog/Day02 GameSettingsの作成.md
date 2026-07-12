@@ -1,4 +1,4 @@
-# GameSettingsの作成
+# Day02: GameSettingsの作成
 
 ## フレームの設定をクラス化する
 
