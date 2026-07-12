@@ -48,26 +48,27 @@ public final class GameLoop implements Runnable {
             long elapsed = now - lastTime;
             lastTime = now;
             accumulator += elapsed;
+            boolean updated = false;
 
-            int maxUpdateCount = 5;
-            int updateCount = 0;
-
-            while (accumulator >= nsPerUpdate && updateCount < maxUpdateCount) {
+            while (accumulator >= nsPerUpdate) {
                 update();
                 accumulator -= nsPerUpdate;
-                updateCount++;
+                updated = true;
             }
 
-            if (updateCount == maxUpdateCount) {
-                accumulator = 0.0;
+            if (updated) {
+                render();
+            } else {
+                sleep();
             }
+        }
+    }
 
-            // alphaを計算
-            double alpha = accumulator / nsPerUpdate;
-            render(alpha);
-
-            // 待っているプロセスがいるならCPU解放、いなければそのまま続行
-            Thread.yield();
+    private void sleep() {
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -77,7 +78,7 @@ public final class GameLoop implements Runnable {
         }
     }
 
-    private void render(double alpha) {
-        renderer.render(renderables, alpha);
+    private void render() {
+        renderer.render(renderables);
     }
 }
