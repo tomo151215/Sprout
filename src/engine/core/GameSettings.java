@@ -1,3 +1,4 @@
+package engine.core;
 public final class GameSettings {
 
     private final int width;

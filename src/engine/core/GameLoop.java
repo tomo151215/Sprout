@@ -1,4 +1,9 @@
+package engine.core;
 import java.util.List;
+
+import engine.graphics.GameRenderer;
+import engine.graphics.Renderable;
+import engine.update.Updatable;
 
 public final class GameLoop implements Runnable {
     private final int targetUps;

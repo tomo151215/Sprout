@@ -1,4 +1,8 @@
+package engine.window;
 import javax.swing.JFrame;
+
+import engine.core.GameSettings;
+
 import java.awt.Canvas;
 import java.awt.Dimension;
 
