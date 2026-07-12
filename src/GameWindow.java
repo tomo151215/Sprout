@@ -2,7 +2,7 @@ import javax.swing.JFrame;
 import java.awt.Canvas;
 import java.awt.Dimension;
 
-public class GameWindow {
+public final class GameWindow {
     private final JFrame frame = new JFrame();
     private final Canvas canvas = new Canvas();
     private final GameSettings set;
@@ -36,8 +36,6 @@ public class GameWindow {
 
     public void show() {
         frame.setVisible(set.isVisible());
-
-        // ウィンドウが表示されたら、Canvasにキーボード入力を集中させる
         if (set.isVisible()) {
             canvas.requestFocusInWindow();
         }
