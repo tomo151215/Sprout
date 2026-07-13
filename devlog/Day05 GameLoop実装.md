@@ -294,21 +294,28 @@ update() を何回も実行する
 ```
 このような状態は、一般に **spiral of death** と呼ばれることがあります。対策としては、1回のループで実行する `update()` の最大回数を制限する方法があります。
 ```java
-int updateCount = 0;
-int maxUpdatesPerFrame = 5;  // 1フレームで実行するupdate()の上限回数
+    @Override
+    public void run() {
+        final int maxUpdatesPerFrame = 5;
 
-while (accumulator >= nsPerUpdate && updateCount < maxUpdatesPerFrame) {
-    update();
-    accumulator -= nsPerUpdate;
-    updated = true;
-    updateCount++;
-}
+        long lastTime = System.nanoTime();
+        double accumulator = 0.0;
 
-if (updateCount == maxUpdatesPerFrame) {
-    // update()が追いつかない状態（Spiral of Death）を防ぐため、
-    // 残りの更新時間を破棄して次のフレームから再開する
-    accumulator = 0.0;
-}
+        while (running) {
+            int updateCount = 0;
+            ...
+            while (accumulator >= nsPerUpdate && updateCount < maxUpdatesPerFrame) {
+                update();
+                accumulator -= nsPerUpdate;
+                updateCount++;
+            }
+
+            if (updateCount == maxUpdatesPerFrame) {
+                accumulator = 0.0;
+            }
+            ...
+        }
+    }
 ```
 これにより、処理が重くなった場合でも、1回のループで無制限に `update()` が実行されることを防げます。ただし、`accumulator = 0.0;` とすると、たまっていた時間を捨てることになります。そのため、ゲーム内時間が一時的に現実時間から遅れる可能性があります。しかし、無限に `update()` が連続実行されてゲームが固まるよりは安全です。
 
