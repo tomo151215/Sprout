@@ -207,11 +207,7 @@ if (updated) {
 一方、`updated` が `false` の場合は、まだ1回分の更新時間がたまっていないということです。つまり、ゲームの状態は前回の描画時から変わっていません。そのため、このタイミングで描画しても、基本的には同じ画面を描くだけになります。そこで、無駄にCPUを使い続けないように `sleep()` を呼び出します。
 ```java
     private void sleep() {
-        try {
-            Thread.sleep(1);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        LockSupport.parkNanos(1_000_000);
     }
 ```
 このように、`update()` が発生したときだけ `render()` する方式を、ここでは **更新同期描画型** と呼びます。したがって、今回のGameLoopは **固定時間ステップ型かつ更新同期描画型** といえます。
