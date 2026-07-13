@@ -1,6 +1,7 @@
 package engine.graphics;
+
 import java.awt.Graphics;
 
 public interface Renderable {
-    void draw(Graphics g);
+    void draw(Graphics g, double alpha);
 }
