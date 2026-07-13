@@ -1,4 +1,5 @@
 package engine.core;
+
 import java.util.List;
 
 import engine.graphics.GameRenderer;
@@ -53,19 +54,14 @@ public final class GameLoop implements Runnable {
             long elapsed = now - lastTime;
             lastTime = now;
             accumulator += elapsed;
-            boolean updated = false;
 
             while (accumulator >= nsPerUpdate) {
                 update();
                 accumulator -= nsPerUpdate;
-                updated = true;
             }
 
-            if (updated) {
-                render();
-            } else {
-                sleep();
-            }
+            render();
+
         }
     }
 
