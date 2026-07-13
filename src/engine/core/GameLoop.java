@@ -1,5 +1,7 @@
 package engine.core;
+
 import java.util.List;
+import java.util.concurrent.locks.LockSupport;
 
 import engine.graphics.GameRenderer;
 import engine.graphics.Renderable;
@@ -45,36 +47,35 @@ public final class GameLoop implements Runnable {
     @Override
     public void run() {
         final double nsPerUpdate = 1_000_000_000.0 / targetUps;
+        final int maxUpdatesPerFrame = 5;
+
         long lastTime = System.nanoTime();
         double accumulator = 0.0;
 
         while (running) {
+            int updateCount = 0;
             long now = System.nanoTime();
             long elapsed = now - lastTime;
             lastTime = now;
             accumulator += elapsed;
-            boolean updated = false;
-
-            while (accumulator >= nsPerUpdate) {
+            while (accumulator >= nsPerUpdate && updateCount < maxUpdatesPerFrame) {
                 update();
                 accumulator -= nsPerUpdate;
-                updated = true;
+                updateCount++;
             }
 
-            if (updated) {
-                render();
-            } else {
-                sleep();
+            if (updateCount == maxUpdatesPerFrame) {
+                accumulator = 0.0;
             }
+
+            double alpha = accumulator / nsPerUpdate;
+            render(alpha);
+            sleep();
         }
     }
 
     private void sleep() {
-        try {
-            Thread.sleep(1);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
+        LockSupport.parkNanos(1_000_000);
     }
 
     private void update() {
@@ -83,7 +84,7 @@ public final class GameLoop implements Runnable {
         }
     }
 
-    private void render() {
-        renderer.render(renderables);
+    private void render(double alpha) {
+        renderer.render(renderables, alpha);
     }
 }
