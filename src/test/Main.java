@@ -1,4 +1,5 @@
 package test;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -20,11 +21,15 @@ public class Main {
             GameRenderer renderer = new GameRenderer(window.getCanvas());
             List<Renderable> r = new ArrayList<>();
             List<Updatable> u = new ArrayList<>();
+            MovingBox box = new MovingBox(0, 0, 100, 100);
+            MovingBox box2 = new MovingBox(100, 200, 100, 100);
+            r.add(box);
+            r.add(box2);
+            u.add(box);
+            u.add(box2);
 
-            // 5. レンダラーとゲームループの初期化
-            GameLoop gameLoop = new GameLoop(120, renderer, r, u);
+            GameLoop gameLoop = new GameLoop(300, renderer, r, u);
 
-            // 6. ゲームスタート！
             gameLoop.start();
         });
     }
