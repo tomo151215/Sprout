@@ -4,23 +4,23 @@ import java.util.List;
 import java.util.concurrent.locks.LockSupport;
 
 import engine.graphics.GameRenderer;
-import engine.graphics.Renderable;
-import engine.update.Updatable;
+import engine.object.GameObject;
+
 
 public final class GameLoop implements Runnable {
     private final int targetUps;
     private final GameRenderer renderer;
-    private final List<Renderable> renderables;
-    private final List<Updatable> updatables;
+    private final List<GameObject> renderObjects;
+    private final List<GameObject> updateObjects;
     private Thread th;
 
     private volatile boolean running;
 
-    public GameLoop(int targetUps, GameRenderer renderer, List<Renderable> renderables, List<Updatable> updatables) {
+    public GameLoop(int targetUps, GameRenderer renderer, List<GameObject> renderObjects, List<GameObject> updateObjects) {
         this.targetUps = targetUps;
         this.renderer = renderer;
-        this.renderables = renderables;
-        this.updatables = updatables;
+        this.renderObjects = renderObjects;
+        this.updateObjects = updateObjects;
     }
 
     public synchronized void start() {
@@ -79,12 +79,12 @@ public final class GameLoop implements Runnable {
     }
 
     private void update() {
-        for (Updatable u : updatables) {
-            u.update();
+        for (GameObject u : updateObjects) {
+            u.onUpdate();
         }
     }
 
     private void render(double alpha) {
-        renderer.render(renderables, alpha);
+        renderer.render(renderObjects, alpha);
     }
 }

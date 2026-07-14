@@ -6,6 +6,8 @@ import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.util.List;
 
+import engine.object.GameObject;
+
 public class GameRenderer {
     private final Canvas canvas;
     private final BufferStrategy bs;
@@ -16,15 +18,15 @@ public class GameRenderer {
         this.bs = this.canvas.getBufferStrategy();
     }
 
-    public void render(List<Renderable> renderables, double alpha) {
+    public void render(List<GameObject> objects, double alpha) {
         Graphics g = bs.getDrawGraphics();
         try {
             // 背景クリア
             g.setColor(Color.WHITE);
             g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
             // 描画内容
-            for (Renderable r : renderables) {
-                r.draw(g, alpha);
+            for (GameObject o : objects) {
+                o.onDraw(g, alpha);
             }
         } finally {
             // リソース解放

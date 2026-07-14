@@ -125,3 +125,197 @@ protected final double lerp(double start, double end, double alpha) {
 となります。
 
 このメソッドを `GameObject` に用意しておくことで、プレイヤーや敵などすべてのゲームオブジェクトが共通の補間処理を利用でき、コードの重複を防ぐことができます。
+
+## GameLoopやGameRedererの改変
+これまで`update`、`render`と呼びだしていたメソッドはGameObjectを作成したことにより、`onUpdate()`や`onDraw()`と呼びだす必要があるのでリファクタリングします。また、更新、描画するオブジェクトのリストも`List<GameObject>`にしなければなりません。
+### GameLoopの改変
+```java
+package engine.core;
+
+import java.util.List;
+import java.util.concurrent.locks.LockSupport;
+
+import engine.graphics.GameRenderer;
+import engine.object.GameObject;
+
+
+public final class GameLoop implements Runnable {
+    private final int targetUps;
+    private final GameRenderer renderer;
+    private final List<GameObject> renderObjects;
+    private final List<GameObject> updateObjects;
+    private Thread th;
+
+    private volatile boolean running;
+
+    public GameLoop(int targetUps, GameRenderer renderer, List<GameObject> renderObjects, List<GameObject> updateObjects) {
+        this.targetUps = targetUps;
+        this.renderer = renderer;
+        this.renderObjects = renderObjects;
+        this.updateObjects = updateObjects;
+    }
+
+    public synchronized void start() {
+        if (running) {
+            return;
+        }
+        running = true;
+        th = new Thread(this);
+        th.start();
+    }
+
+    public synchronized void stop() {
+        running = false;
+
+        if (th != null && Thread.currentThread() != th) { // デッドロック回避
+            try {
+                th.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+        final double nsPerUpdate = 1_000_000_000.0 / targetUps;
+        final int maxUpdatesPerFrame = 5;
+
+        long lastTime = System.nanoTime();
+        double accumulator = 0.0;
+
+        while (running) {
+            int updateCount = 0;
+            long now = System.nanoTime();
+            long elapsed = now - lastTime;
+            lastTime = now;
+            accumulator += elapsed;
+            while (accumulator >= nsPerUpdate && updateCount < maxUpdatesPerFrame) {
+                update();
+                accumulator -= nsPerUpdate;
+                updateCount++;
+            }
+
+            if (updateCount == maxUpdatesPerFrame) {
+                accumulator = 0.0;
+            }
+
+            double alpha = accumulator / nsPerUpdate;
+            render(alpha);
+            sleep();
+        }
+    }
+
+    private void sleep() {
+        LockSupport.parkNanos(1_000_000);
+    }
+
+    private void update() {
+        for (GameObject u : updateObjects) {
+            u.onUpdate();
+        }
+    }
+
+    private void render(double alpha) {
+        renderer.render(renderObjects, alpha);
+    }
+}
+```
+### GameRedererの改変
+```java
+package engine.graphics;
+
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.image.BufferStrategy;
+import java.util.List;
+
+import engine.object.GameObject;
+
+public class GameRenderer {
+    private final Canvas canvas;
+    private final BufferStrategy bs;
+
+    public GameRenderer(Canvas canvas) {
+        this.canvas = canvas;
+        this.canvas.createBufferStrategy(3);
+        this.bs = this.canvas.getBufferStrategy();
+    }
+
+    public void render(List<GameObject> objects, double alpha) {
+        Graphics g = bs.getDrawGraphics();
+        try {
+            // 背景クリア
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            // 描画内容
+            for (GameObject o : objects) {
+                o.onDraw(g, alpha);
+            }
+        } finally {
+            // リソース解放
+            g.dispose();
+        }
+        // フリッピング(画面反映)
+        bs.show();
+    }
+}
+```
+
+## GameObjectの継承
+GameObjectを継承して実際に描画するオブジェクトのクラスを作成していきます。
+```java
+package test;
+
+import java.awt.Color;
+import java.awt.Graphics;
+
+import engine.object.GameObject;
+
+public class MovingBox extends GameObject {
+
+    private int width;
+    private int height;
+
+    public MovingBox(double x, double y, int width, int height) {
+        super(x, y);
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    public void update() {
+        setX(getX() + 1.0);
+    }
+
+    @Override
+    public void draw(Graphics g, double alpha) {
+        // Lerp実装
+        double lerpX = lerp(getPreviousX(), getX(), alpha);
+
+        g.setColor(Color.BLACK);
+        g.fillRect((int) lerpX, (int) getY(), this.width, this.height);
+    }
+}
+```
+
+## Mainクラス
+```java
+public static void main(String[] args) {
+        GameSettings set = new GameSettings(800, 600, "Sample Frame", true, true, true, false);
+        SwingUtilities.invokeLater(() -> {
+            GameWindow window = new GameWindow(set);
+            window.show();
+            GameRenderer renderer = new GameRenderer(window.getCanvas());
+            List<GameObject> r = new ArrayList<>();
+            List<GameObject> u = new ArrayList<>();
+            MovingBox box = new MovingBox(0, 200, 200, 300);
+            r.add(box);
+            u.add(box);
+
+            GameLoop gameLoop = new GameLoop(200, renderer, r, u);
+            gameLoop.start();
+        });
+    }
+```
