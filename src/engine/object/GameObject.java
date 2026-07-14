@@ -51,6 +51,22 @@ public abstract class GameObject implements Renderable, Updatable {
         return previousY;
     }
 
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public void setPreviousX(double previousX) {
+        this.previousX = previousX;
+    }
+
+    public void setPreviousY(double previousY) {
+        this.previousY = previousY;
+    }
+
     
 
 }
