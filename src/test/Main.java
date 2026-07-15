@@ -1,14 +1,7 @@
 package test;
 
-import java.util.List;
-import java.util.ArrayList;
-
 import javax.swing.SwingUtilities;
-
-import engine.core.GameLoop;
 import engine.core.GameSettings;
-import engine.graphics.GameRenderer;
-import engine.object.GameObject;
 import engine.window.GameWindow;
 
 public class Main {
