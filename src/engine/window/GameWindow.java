@@ -2,6 +2,7 @@ package engine.window;
 import javax.swing.JFrame;
 
 import engine.core.GameSettings;
+import engine.input.Keyboard;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
@@ -16,6 +17,7 @@ public final class GameWindow {
 
         // Canvasの準備
         canvas.setPreferredSize(new Dimension(set.getWidth(), set.getHeight()));
+        canvas.addKeyListener(new Keyboard());
         canvas.setFocusable(true);
 
         // ウィンドウの基本設定
