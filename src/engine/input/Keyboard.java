@@ -29,4 +29,8 @@ public class Keyboard implements KeyListener {
         }
     }
 
+    public boolean isPresed(int keyCode) {
+        return 0 <= keyCode && keyCode < pressed.length && pressed[keyCode];
+    }
+
 }
