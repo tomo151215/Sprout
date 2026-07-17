@@ -16,7 +16,7 @@ public class Keyboard implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
-        if (0 <= code && code < pressed.length) {
+        if (isWithinBounds(code)) {
             pressed[code] = true;
         }
     }
@@ -24,13 +24,17 @@ public class Keyboard implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
-        if (0 <= code && code < pressed.length) {
+        if (isWithinBounds(code)) {
             pressed[code] = false;
         }
     }
 
     public boolean isPresed(int keyCode) {
-        return 0 <= keyCode && keyCode < pressed.length && pressed[keyCode];
+        return isWithinBounds(keyCode) && pressed[keyCode];
+    }
+
+    private boolean isWithinBounds(int keyCode) {
+        return keyCode >= 0 && keyCode < pressed.length;
     }
 
 }
