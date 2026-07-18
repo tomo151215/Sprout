@@ -30,7 +30,6 @@ public abstract class GameObject implements Renderable, Updatable {
         draw(g, alpha);
     }
 
-    // Lerpメソッド
     protected final double lerp(double start, double end, double alpha) {
         return start + (end - start) * alpha;
     }
