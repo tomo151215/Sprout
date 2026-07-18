@@ -1,4 +1,5 @@
 package engine.window;
+
 import javax.swing.JFrame;
 
 import engine.core.GameSettings;
@@ -12,12 +13,12 @@ public final class GameWindow {
     private final Canvas canvas = new Canvas();
     private final GameSettings set;
 
-    public GameWindow(GameSettings set) {
+    public GameWindow(GameSettings set, Keyboard k) {
         this.set = set;
 
         // Canvasの準備
         canvas.setPreferredSize(new Dimension(set.getWidth(), set.getHeight()));
-        canvas.addKeyListener(new Keyboard());
+        canvas.addKeyListener(k);
         canvas.setFocusable(true);
 
         // ウィンドウの基本設定
