@@ -29,7 +29,7 @@ public class Keyboard implements KeyListener {
         }
     }
 
-    public boolean isPresed(int keyCode) {
+    public boolean isPressed(int keyCode) {
         return isWithinBounds(keyCode) && pressed[keyCode];
     }
 
