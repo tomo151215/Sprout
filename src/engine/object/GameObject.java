@@ -32,7 +32,7 @@ public abstract class GameObject implements Renderable, Updatable {
 
     // Lerpメソッド
     protected final double lerp(double start, double end, double alpha) {
-        return (1 - alpha) * start + alpha * end;
+        return start + (end - start) * alpha;
     }
 
     public double getX() {
@@ -66,7 +66,5 @@ public abstract class GameObject implements Renderable, Updatable {
     public void setPreviousY(double previousY) {
         this.previousY = previousY;
     }
-
-    
 
 }
