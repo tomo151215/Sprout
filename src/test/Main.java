@@ -25,7 +25,7 @@ public class Main {
             List<GameObject> u = new ArrayList<>();
             r.add(block);
             u.add(block);
-            GameLoop loop = new GameLoop(130, renderer, r, u);
+            GameLoop loop = new GameLoop(130, renderer, r, u, k);
             loop.start();
         });
     }
