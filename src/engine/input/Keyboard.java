@@ -7,6 +7,16 @@ public class Keyboard implements KeyListener {
 
     private static final int KEY_COUNT = 512;
     private final boolean[] pressed = new boolean[KEY_COUNT];
+    private final boolean[] previousPressed = new boolean[KEY_COUNT];
+
+    public void endFrame() {
+        System.arraycopy(
+                pressed,
+                0,
+                previousPressed,
+                0,
+                KEY_COUNT);
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -37,4 +47,11 @@ public class Keyboard implements KeyListener {
         return keyCode >= 0 && keyCode < pressed.length;
     }
 
+    public boolean isJustPressed(int keyCode) {
+        return isPressed(keyCode) && !previousPressed[keyCode];
+    }
+
+    public boolean isJustReleased(int keyCode) {
+        return !isPressed(keyCode) && previousPressed[keyCode];
+    }
 }
