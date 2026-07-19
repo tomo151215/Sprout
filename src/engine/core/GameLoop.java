@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.locks.LockSupport;
 
 import engine.graphics.GameRenderer;
+import engine.input.Keyboard; 
 import engine.object.GameObject;
 
 
@@ -12,15 +13,17 @@ public final class GameLoop implements Runnable {
     private final GameRenderer renderer;
     private final List<GameObject> renderObjects;
     private final List<GameObject> updateObjects;
+    private final Keyboard keyboard; // ★追加：Keyboardの参照を保持
     private Thread th;
 
     private volatile boolean running;
 
-    public GameLoop(int targetUps, GameRenderer renderer, List<GameObject> renderObjects, List<GameObject> updateObjects) {
+    public GameLoop(int targetUps, GameRenderer renderer, List<GameObject> renderObjects, List<GameObject> updateObjects, Keyboard keyboard) {
         this.targetUps = targetUps;
         this.renderer = renderer;
         this.renderObjects = renderObjects;
         this.updateObjects = updateObjects;
+        this.keyboard = keyboard; // ★追加
     }
 
     public synchronized void start() {
@@ -35,7 +38,7 @@ public final class GameLoop implements Runnable {
     public synchronized void stop() {
         running = false;
 
-        if (th != null && Thread.currentThread() != th) { // デッドロック回避
+        if (th != null && Thread.currentThread() != th) {
             try {
                 th.join();
             } catch (InterruptedException e) {
@@ -79,6 +82,9 @@ public final class GameLoop implements Runnable {
     }
 
     private void update() {
+        // ★追加：ゲームロジックの更新より先に、まず入力のスナップショットを取得する！
+        keyboard.updateSnapshot();
+
         for (GameObject u : updateObjects) {
             u.onUpdate();
         }
