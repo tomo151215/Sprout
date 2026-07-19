@@ -6,16 +6,30 @@ import java.awt.event.KeyListener;
 public class Keyboard implements KeyListener {
 
     private static final int KEY_COUNT = 512;
+    private final boolean[] currentPressed = new boolean[KEY_COUNT];
     private final boolean[] pressed = new boolean[KEY_COUNT];
     private final boolean[] previousPressed = new boolean[KEY_COUNT];
 
-    public void endFrame() {
+    private final Object lock = new Object();
+
+    public void updateSnapshot() {
         System.arraycopy(
-                pressed,
+                pressed, 
                 0,
-                previousPressed,
+                previousPressed, 
                 0,
-                KEY_COUNT);
+                KEY_COUNT
+            );
+
+        synchronized (lock) {
+            System.arraycopy(
+                    currentPressed, 
+                    0,
+                    pressed, 
+                    0,
+                    KEY_COUNT
+                );
+        }
     }
 
     @Override
@@ -27,7 +41,9 @@ public class Keyboard implements KeyListener {
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
         if (isWithinBounds(code)) {
-            pressed[code] = true;
+            synchronized (lock) {
+                currentPressed[code] = true;
+            }
         }
     }
 
@@ -35,7 +51,9 @@ public class Keyboard implements KeyListener {
     public void keyReleased(KeyEvent e) {
         int code = e.getKeyCode();
         if (isWithinBounds(code)) {
-            pressed[code] = false;
+            synchronized (lock) {
+                currentPressed[code] = false;
+            }
         }
     }
 
@@ -44,7 +62,7 @@ public class Keyboard implements KeyListener {
     }
 
     private boolean isWithinBounds(int keyCode) {
-        return keyCode >= 0 && keyCode < pressed.length;
+        return keyCode >= 0 && keyCode < KEY_COUNT;
     }
 
     public boolean isJustPressed(int keyCode) {
