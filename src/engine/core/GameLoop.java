@@ -13,7 +13,7 @@ public final class GameLoop implements Runnable {
     private final GameRenderer renderer;
     private final List<GameObject> renderObjects;
     private final List<GameObject> updateObjects;
-    private final Keyboard keyboard; // ★追加：Keyboardの参照を保持
+    private final Keyboard keyboard; 
     private Thread th;
 
     private volatile boolean running;
@@ -23,7 +23,7 @@ public final class GameLoop implements Runnable {
         this.renderer = renderer;
         this.renderObjects = renderObjects;
         this.updateObjects = updateObjects;
-        this.keyboard = keyboard; // ★追加
+        this.keyboard = keyboard;
     }
 
     public synchronized void start() {
@@ -82,7 +82,6 @@ public final class GameLoop implements Runnable {
     }
 
     private void update() {
-        // ★追加：ゲームロジックの更新より先に、まず入力のスナップショットを取得する！
         keyboard.updateSnapshot();
 
         for (GameObject u : updateObjects) {

@@ -2,23 +2,22 @@ package test;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.KeyEvent;
 
-import engine.input.Keyboard;
+import engine.input.InputManager;
 import engine.object.GameObject;
 
 public class Block extends GameObject {
     private int width;
     private int height;
     private int speed;
-    private final Keyboard k;
+    private final InputManager<Action> input;
 
-    public Block(Keyboard k, int width, int height,int speed) {
+    public Block(InputManager<Action> input, int width, int height, int speed) {
         super(400, 300);
-        this.k = k;
+        this.input = input;
         this.width = width;
         this.height = height;
-        this.speed=speed;
+        this.speed = speed;
     }
 
     @Override
@@ -31,19 +30,19 @@ public class Block extends GameObject {
 
     @Override
     public void update() {
-        if (k.isPressed(KeyEvent.VK_LEFT)) {
+        if (input.isPressed(Action.MOVE_LEFT)) {
             setX(getX() - speed);
         }
 
-        if (k.isPressed(KeyEvent.VK_UP)) {
+        if (input.isPressed(Action.MOVE_UP)) {
             setY(getY() - speed);
         }
 
-        if (k.isPressed(KeyEvent.VK_RIGHT)) {
+        if (input.isPressed(Action.MOVE_RIGHT)) {
             setX(getX() + speed);
         }
 
-        if (k.isPressed(KeyEvent.VK_DOWN)) {
+        if (input.isPressed(Action.MOVE_DOWN)) {
             setY(getY() + speed);
         }
     }
