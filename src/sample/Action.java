@@ -1,4 +1,4 @@
-package test;
+package sample;
 
 public enum Action {
     MOVE_LEFT,
