@@ -102,7 +102,7 @@ public final void stop() {
     onShutdown(); 
 }
 ```
-ただし、stopを複数回呼び出すとonShutdownを複数呼び出してしまうので、フラグを使ってGameApplicationを起動していたら（true）stopを呼び出せる、すでに実行が止まっていたら（false）stopお呼び出せないようにします。
+ただし、stopを複数回呼び出すとonShutdownを複数呼び出してしまうので、フラグを使ってGameApplicationを起動していたら（true）stopを呼び出せる、すでに実行が止まっていたら（false）stopを呼び出せないようにします。
 ```java
 private boolean running;　　//falseで初期化されている
 ...
