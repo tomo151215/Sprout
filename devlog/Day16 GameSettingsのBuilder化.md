@@ -1,3 +1,14 @@
+# Day16: GameSettingsのBuilder化
+
+## GameSettingsの問題点
+現在のGameSettingsは、インスタンス化するときに以下のように行います。
+```java
+new GameSettings(800, 600, "SampleGame", true, true, true, false);
+```
+これだとコンストラクタの各引数が何を表しているかよくわからず、ミスが発生する可能性があります。そこでBuilderパターンを用います。
+
+## Builder化
+```java
 package engine.core;
 
 public final class GameSettings {
@@ -110,3 +121,13 @@ public final class GameSettings {
     }
 
 }
+```
+またMyGameにおいてcreateSetings()メソッド内でBuilderを使用してGameSettingsオブジェクトを作成しています。
+```java
+    protected GameSettings createSettings() {
+        return GameSettings.builder()
+                .size(800,600)
+                .title("SampleApp")
+                .build();
+    }
+```

@@ -11,7 +11,10 @@ public class MyGame extends GameApplication {
 
     @Override
     protected GameSettings createSettings() {
-        return new GameSettings(800, 600, "SampleGame", true, true, true, false);
+        return GameSettings.builder()
+                .size(800,600)
+                .title("SampleApp")
+                .build();
     }
 
     @Override

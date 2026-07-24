@@ -23,7 +23,7 @@ public final class GameWindow {
 
         // ウィンドウの基本設定
         frame.setTitle(set.getTitle());
-        frame.setResizable(set.isResizable());
+        frame.setResizable(set.isResizeable());
 
         if (set.isExitOnClose()) {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
