@@ -1,4 +1,5 @@
 package engine.core;
+
 public final class GameSettings {
 
     private final int width;
@@ -9,23 +10,83 @@ public final class GameSettings {
     private final boolean exitOnClose;
     private final boolean isResizeable;
 
-    public GameSettings(int width, int height, String title, boolean isVisible, boolean centerOnScreen,
-            boolean exitOnClose, boolean isResizeable) {
-        this.width = width;
-        this.height = height;
-        this.title = title;
-        this.isVisible = isVisible;
-        this.centerOnScreen = centerOnScreen;
-        this.exitOnClose = exitOnClose;
-        this.isResizeable = isResizeable;
+    private GameSettings(Builder builder) {
+        this.width = builder.width;
+        this.height = builder.height;
+        this.title = builder.title;
+        this.isVisible = builder.isVisible;
+        this.centerOnScreen = builder.centerOnScreen;
+        this.exitOnClose = builder.exitOnClose;
+        this.isResizeable = builder.isResizeable;
     }
 
-    public int getHeight() {
-        return height;
+    public static final class Builder {
+        private int width;
+        private int height;
+        private String title;
+        private boolean isVisible = true;
+        private boolean centerOnScreen = true;
+        private boolean exitOnClose = true;
+        private boolean isResizeable = false;
+
+        public Builder size(int width, int height) {
+            if (width <= 0) {
+                throw new IllegalArgumentException("width must be greater than 0.");
+            }
+
+            if (height <= 0) {
+                throw new IllegalArgumentException("height must be greater than 0.");
+            }
+
+            this.width = width;
+            this.height = height;
+            return this;
+        }
+
+        public Builder title(String title) {
+            if (title == null || title.isBlank()) {
+                throw new IllegalArgumentException("title must not be blank.");
+            }
+            this.title = title;
+            return this;
+        }
+
+        public Builder isVisible(boolean isVisible) {
+            this.isVisible = isVisible;
+            return this;
+        }
+
+        public Builder centerOnScreen(boolean centerOnScreen) {
+            this.centerOnScreen = centerOnScreen;
+            return this;
+        }
+
+        public Builder exitOnClose(boolean exitOnClose) {
+            this.exitOnClose = exitOnClose;
+            return this;
+        }
+
+        public Builder isResizeable(boolean isResizeable) {
+            this.isResizeable = isResizeable;
+            return this;
+        }
+
+        public GameSettings build() {
+            return new GameSettings(this);
+        }
+
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     public int getWidth() {
         return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public String getTitle() {
@@ -44,7 +105,7 @@ public final class GameSettings {
         return exitOnClose;
     }
 
-    public boolean isResizable() {
+    public boolean isResizeable() {
         return isResizeable;
     }
 
