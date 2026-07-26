@@ -7,19 +7,41 @@ import engine.input.Keyboard;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public final class GameWindow {
     private final JFrame frame = new JFrame();
     private final Canvas canvas = new Canvas();
     private final GameSettings set;
+    private final Keyboard keyboard;
 
-    public GameWindow(GameSettings set, Keyboard k) {
+    public GameWindow(GameSettings set, Keyboard keyboard) {
         this.set = set;
+        this.keyboard = keyboard;
 
         // Canvasの準備
         canvas.setPreferredSize(new Dimension(set.getWidth(), set.getHeight()));
-        canvas.addKeyListener(k);
+        canvas.addKeyListener(keyboard);
         canvas.setFocusable(true);
+
+        canvas.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                keyboard.clear();
+            }
+        });
+
+        canvas.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                requestCanvasFocus();
+            }
+        });
 
         // ウィンドウの基本設定
         frame.setTitle(set.getTitle());
@@ -30,6 +52,18 @@ public final class GameWindow {
         } else {
             frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         }
+
+        frame.addWindowFocusListener(new WindowAdapter() {
+            @Override
+            public void windowLostFocus(WindowEvent e) {
+                keyboard.clear();
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent e) {
+                requestCanvasFocus();
+            }
+        });
 
         // コンポーネントの配置
         frame.add(canvas);
@@ -44,8 +78,12 @@ public final class GameWindow {
     public void show() {
         frame.setVisible(set.isVisible());
         if (set.isVisible()) {
-            canvas.requestFocusInWindow();
+            requestCanvasFocus();
         }
+    }
+
+    public void requestCanvasFocus() {
+        canvas.requestFocusInWindow();
     }
 
     public Canvas getCanvas() {

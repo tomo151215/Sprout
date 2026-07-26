@@ -14,21 +14,19 @@ public class Keyboard implements KeyListener {
 
     public void updateSnapshot() {
         System.arraycopy(
-                pressed, 
+                pressed,
                 0,
-                previousPressed, 
+                previousPressed,
                 0,
-                KEY_COUNT
-            );
+                KEY_COUNT);
 
         synchronized (lock) {
             System.arraycopy(
-                    currentPressed, 
+                    currentPressed,
                     0,
-                    pressed, 
+                    pressed,
                     0,
-                    KEY_COUNT
-                );
+                    KEY_COUNT);
         }
     }
 
@@ -53,6 +51,16 @@ public class Keyboard implements KeyListener {
         if (isWithinBounds(code)) {
             synchronized (lock) {
                 currentPressed[code] = false;
+            }
+        }
+    }
+
+    public void clear() {
+        synchronized (lock) {
+            for (int i = 0; i < KEY_COUNT; i++) {
+                currentPressed[i] = false;
+                pressed[i] = false;
+                previousPressed[i] = false;
             }
         }
     }
