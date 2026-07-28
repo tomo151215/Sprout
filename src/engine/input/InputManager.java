@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public final class InputManager<T extends Enum<T>> {
-    private final Keyboard keyboard;  //委譲
+    private final Keyboard keyboard;
     private final Map<T, List<Integer>> mappings;
 
     public InputManager(Keyboard keyboard, Class<T> actionClass) {
@@ -17,35 +17,67 @@ public final class InputManager<T extends Enum<T>> {
         }
     }
 
-    // キーマッピングを行う
     public void addMapping(T action, int keycode) {
-        mappings.get(action).add(keycode);
+        List<Integer> keys = getKeyList(action);
+        if (!keys.contains(keycode)) {
+            keys.add(keycode);
+        }
     }
 
-    // 指定したアクションが押されているかどうか判定
     public boolean isPressed(T action) {
-        for (int keycode : mappings.get(action)) {
+        for (int keycode : getKeyList(action)) {
             if (keyboard.isPressed(keycode))
                 return true;
         }
         return false;
     }
 
-    // 指定したアクションが押された瞬間かどうかを判定
     public boolean isJustPressed(T action) {
-        for (int keycode : mappings.get(action)) {
+        for (int keycode : getKeyList(action)) {
             if (keyboard.isJustPressed(keycode))
                 return true;
         }
         return false;
     }
 
-    // 指定したアクションが離された瞬間かどうかを判定
     public boolean isJustReleased(T action) {
-        for (int keycode : mappings.get(action)) {
+        for (int keycode : getKeyList(action)) {
             if (keyboard.isJustReleased(keycode))
                 return true;
         }
         return false;
+    }
+
+    private List<Integer> getKeyList(T action) {
+        if (action == null) {
+            throw new IllegalArgumentException("action must not be null. ");
+        }
+        List<Integer> keys = mappings.get(action);
+        if (keys == null) {
+            throw new IllegalArgumentException("Unknown action: " + action);
+        }
+        return keys;
+    }
+
+    public void removeMapping(T action, int keycode) {
+        getKeyList(action).remove(Integer.valueOf(keycode));
+    }
+
+    public void clearMapping(T action) {
+        getKeyList(action).clear();
+    }
+
+    public void clearAllMapping() {
+        for (List<Integer> value : mappings.values()) {
+            value.clear();
+        }
+    }
+
+    public List<Integer> getMappings(T action) {
+        return List.copyOf(getKeyList(action));
+    }
+
+    public boolean hasMapping(T action, int keyCode) {
+        return getKeyList(action).contains(keyCode);
     }
 }
