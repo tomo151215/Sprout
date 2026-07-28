@@ -32,7 +32,7 @@ public final class GameWindow {
         canvas.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                keyboard.clear();
+                GameWindow.this.keyboard.clear();
             }
         });
 
@@ -56,7 +56,7 @@ public final class GameWindow {
         frame.addWindowFocusListener(new WindowAdapter() {
             @Override
             public void windowLostFocus(WindowEvent e) {
-                keyboard.clear();
+                GameWindow.this.keyboard.clear();
             }
 
             @Override
