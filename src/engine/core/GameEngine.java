@@ -5,12 +5,14 @@ import java.util.List;
 
 import engine.graphics.GameRenderer;
 import engine.input.Keyboard;
+import engine.input.Mouse;
 import engine.object.GameObject;
 import engine.window.GameWindow;
 
 public class GameEngine {
     private final GameSettings setttings;
     private final Keyboard keyboard;
+    private final Mouse mouse;
     private final GameWindow window;
     private final GameRenderer renderer;
     private final GameLoop loop;
@@ -20,9 +22,10 @@ public class GameEngine {
     public GameEngine(GameSettings settings, int targetUps) {
         this.setttings = settings;
         this.keyboard = new Keyboard();
-        this.window = new GameWindow(settings, keyboard);
+        this.mouse = new Mouse();
+        this.window = new GameWindow(settings, keyboard, mouse);
         this.renderer = new GameRenderer(window.getCanvas());
-        this.loop = new GameLoop(targetUps, renderer, renderObjects, updateObjects, keyboard);
+        this.loop = new GameLoop(targetUps, renderer, renderObjects, updateObjects, keyboard, mouse);
     }
 
     public void start() {
@@ -52,6 +55,10 @@ public class GameEngine {
         return keyboard;
     }
 
+    public Mouse getMouse() {
+        return mouse;
+    }
+
     public GameWindow getWindow() {
         return window;
     }
@@ -72,5 +79,4 @@ public class GameEngine {
         return updateObjects;
     }
 
-    
 }
