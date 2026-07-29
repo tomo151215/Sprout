@@ -4,26 +4,29 @@ import java.util.List;
 import java.util.concurrent.locks.LockSupport;
 
 import engine.graphics.GameRenderer;
-import engine.input.Keyboard; 
+import engine.input.Keyboard;
+import engine.input.Mouse;
 import engine.object.GameObject;
-
 
 public final class GameLoop implements Runnable {
     private final int targetUps;
     private final GameRenderer renderer;
     private final List<GameObject> renderObjects;
     private final List<GameObject> updateObjects;
-    private final Keyboard keyboard; 
+    private final Keyboard keyboard;
+    private final Mouse mouse;
     private Thread th;
 
     private volatile boolean running;
 
-    public GameLoop(int targetUps, GameRenderer renderer, List<GameObject> renderObjects, List<GameObject> updateObjects, Keyboard keyboard) {
+    public GameLoop(int targetUps, GameRenderer renderer, List<GameObject> renderObjects,
+            List<GameObject> updateObjects, Keyboard keyboard, Mouse mouse) {
         this.targetUps = targetUps;
         this.renderer = renderer;
         this.renderObjects = renderObjects;
         this.updateObjects = updateObjects;
         this.keyboard = keyboard;
+        this.mouse = mouse;
     }
 
     public synchronized void start() {
@@ -83,7 +86,7 @@ public final class GameLoop implements Runnable {
 
     private void update() {
         keyboard.updateSnapshot();
-
+        mouse.updateSnapshot();
         for (GameObject u : updateObjects) {
             u.onUpdate();
         }
