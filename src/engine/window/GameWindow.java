@@ -4,6 +4,7 @@ import javax.swing.JFrame;
 
 import engine.core.GameSettings;
 import engine.input.Keyboard;
+import engine.input.Mouse;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
@@ -20,13 +21,15 @@ public final class GameWindow {
     private final GameSettings set;
     private final Keyboard keyboard;
 
-    public GameWindow(GameSettings set, Keyboard keyboard) {
+    public GameWindow(GameSettings set, Keyboard keyboard, Mouse mouse) {
         this.set = set;
         this.keyboard = keyboard;
 
-        // Canvasの準備
         canvas.setPreferredSize(new Dimension(set.getWidth(), set.getHeight()));
         canvas.addKeyListener(keyboard);
+        canvas.addMouseListener(mouse);
+        canvas.addMouseMotionListener(mouse);
+        canvas.addMouseWheelListener(mouse);
         canvas.setFocusable(true);
 
         canvas.addFocusListener(new FocusAdapter() {
@@ -43,7 +46,6 @@ public final class GameWindow {
             }
         });
 
-        // ウィンドウの基本設定
         frame.setTitle(set.getTitle());
         frame.setResizable(set.isResizeable());
 
@@ -65,11 +67,9 @@ public final class GameWindow {
             }
         });
 
-        // コンポーネントの配置
         frame.add(canvas);
         frame.pack();
 
-        // サイズ確定後に中央寄せ
         if (set.isCenterOnScreen()) {
             frame.setLocationRelativeTo(null);
         }
