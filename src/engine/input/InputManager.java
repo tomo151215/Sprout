@@ -48,17 +48,6 @@ public final class InputManager<T extends Enum<T>> {
         return false;
     }
 
-    private List<Integer> getKeyList(T action) {
-        if (action == null) {
-            throw new IllegalArgumentException("action must not be null. ");
-        }
-        List<Integer> keys = mappings.get(action);
-        if (keys == null) {
-            throw new IllegalArgumentException("Unknown action: " + action);
-        }
-        return keys;
-    }
-
     public void removeMapping(T action, int keycode) {
         getKeyList(action).remove(Integer.valueOf(keycode));
     }
@@ -79,5 +68,16 @@ public final class InputManager<T extends Enum<T>> {
 
     public boolean hasMapping(T action, int keyCode) {
         return getKeyList(action).contains(keyCode);
+    }
+
+    private List<Integer> getKeyList(T action) {
+        if (action == null) {
+            throw new IllegalArgumentException("action must not be null. ");
+        }
+        List<Integer> keys = mappings.get(action);
+        if (keys == null) {
+            throw new IllegalArgumentException("Unknown action: " + action);
+        }
+        return keys;
     }
 }
