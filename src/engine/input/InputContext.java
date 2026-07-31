@@ -7,6 +7,8 @@ public final class InputContext<T extends Enum<T>> {
     private final Mouse mouse;
     private final InputManager<T> inputManager;
 
+    private boolean enabled = true;
+
     public InputContext(Keyboard keyboard, Mouse mouse, Class<T> actionClass) {
         if (keyboard == null) {
             throw new IllegalArgumentException("keyboard must not be null.");
@@ -30,15 +32,15 @@ public final class InputContext<T extends Enum<T>> {
     }
 
     public boolean isPressed(T action) {
-        return this.inputManager.isPressed(action);
+        return enabled && this.inputManager.isPressed(action);
     }
 
     public boolean isJustPressed(T action) {
-        return this.inputManager.isJustPressed(action);
+        return enabled && this.inputManager.isJustPressed(action);
     }
 
     public boolean isJustReleased(T action) {
-        return this.inputManager.isJustReleased(action);
+        return enabled && this.inputManager.isJustReleased(action);
     }
 
     public void removeMapping(T action, int keycode) {
@@ -87,19 +89,19 @@ public final class InputContext<T extends Enum<T>> {
     }
 
     public boolean isMousePressed(MouseButton button) {
-        return this.mouse.isPressed(button);
+        return enabled && this.mouse.isPressed(button);
     }
 
     public boolean isMouseJustPressed(MouseButton button) {
-        return this.mouse.isJustPressed(button);
+        return enabled && this.mouse.isJustPressed(button);
     }
 
     public boolean isMouseJustReleased(MouseButton button) {
-        return this.mouse.isJustReleased(button);
+        return enabled && this.mouse.isJustReleased(button);
     }
 
     public int getMouseWheelRotation() {
-        return this.mouse.getWheelRotation();
+        return enabled ? this.mouse.getWheelRotation() : 0;
     }
 
     // getter
@@ -119,5 +121,20 @@ public final class InputContext<T extends Enum<T>> {
     public void clear() {
         keyboard.clear();
         mouse.clear();
+    }
+
+    // 入力無効化、有効化
+    public void enable() {
+        clear();
+        this.enabled = true;
+    }
+
+    public void disable() {
+        clear();
+        this.enabled = false;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 }
