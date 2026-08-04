@@ -1,11 +1,15 @@
 package engine.core;
 
+import engine.graphics.RendererConfig;
+
 public abstract class GameApplication {
     private boolean running;
     private GameEngine engine;
     private final int DEFAULT_UPS = 60;
 
     protected abstract GameSettings createSettings();
+
+    protected abstract RendererConfig createRendererConfig();
 
     protected int targetUps() {
         return DEFAULT_UPS;
@@ -29,7 +33,8 @@ public abstract class GameApplication {
             return;
         }
         GameSettings settings = createSettings();
-        this.engine = new GameEngine(settings, targetUps());
+        RendererConfig config = createRendererConfig();
+        this.engine = new GameEngine(settings, targetUps(), config);
         onInit();
         engine.start();
         running = true;
