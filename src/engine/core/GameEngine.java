@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import engine.graphics.GameRenderer;
+import engine.graphics.RendererConfig;
 import engine.input.Keyboard;
 import engine.input.Mouse;
 import engine.object.GameObject;
@@ -19,12 +20,18 @@ public class GameEngine {
     private final List<GameObject> renderObjects = new ArrayList<>();
     private final List<GameObject> updateObjects = new ArrayList<>();
 
-    public GameEngine(GameSettings settings, int targetUps) {
+    public GameEngine(GameSettings settings, int targetUps, RendererConfig rendererConfig) {
+        if (settings == null) {
+            throw new IllegalArgumentException("settings must not be null.");
+        }
+        if (rendererConfig == null) {
+            throw new IllegalArgumentException("rendererConfig must not be null.");
+        }
         this.setttings = settings;
         this.keyboard = new Keyboard();
         this.mouse = new Mouse();
         this.window = new GameWindow(settings, keyboard, mouse);
-        this.renderer = new GameRenderer(window.getCanvas());
+        this.renderer = new GameRenderer(window.getCanvas(), rendererConfig);
         this.loop = new GameLoop(targetUps, renderer, renderObjects, updateObjects, keyboard, mouse);
     }
 

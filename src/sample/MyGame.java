@@ -1,9 +1,11 @@
 package sample;
 
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 
 import engine.core.GameApplication;
 import engine.core.GameSettings;
+import engine.graphics.RendererConfig;
 import engine.input.InputManager;
 
 public class MyGame extends GameApplication {
@@ -15,6 +17,11 @@ public class MyGame extends GameApplication {
                 .size(800, 600)
                 .title("SampleApp")
                 .build();
+    }
+
+    @Override
+    protected RendererConfig createRendererConfig() {
+        return RendererConfig.builder().backgroundColor(Color.CYAN).isAntiAliasing(true).build();
     }
 
     @Override
