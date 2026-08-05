@@ -1,7 +1,6 @@
 package engine.graphics;
 
 import java.awt.Canvas;
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -29,19 +28,20 @@ public class GameRenderer {
     }
 
     public void render(List<GameObject> objects, double alpha) {
-        Graphics g = bs.getDrawGraphics();
+        Graphics2D g = (Graphics2D) bs.getDrawGraphics();
 
         try {
-            Graphics2D g2 = (Graphics2D) g;
-            clearScreen(g2);
-            applyRenderingHints(g2);
+            clearScreen(g);
+            applyRenderingHints(g);
+
+            double renderAlpha = config.isInterpolation() ? alpha : 1.0;
 
             for (GameObject o : objects) {
-                o.onDraw(g2, alpha);
+                o.onDraw(g, renderAlpha);
             }
 
             if (config.isDebugRender()) {
-                renderDebug(g2);
+                renderDebug(g);
             }
         } finally {
             g.dispose();
