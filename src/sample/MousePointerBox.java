@@ -2,6 +2,8 @@ package sample;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+
 import engine.input.Mouse;
 import engine.input.MouseButton;
 import engine.object.GameObject;
@@ -30,7 +32,7 @@ public class MousePointerBox extends GameObject {
     }
 
     @Override
-    public void draw(Graphics g, double alpha) {
+    public void draw(Graphics2D g, double alpha) {
         int drawX = (int) lerp(getPreviousX(), getX(), alpha);
         int drawY = (int) lerp(getPreviousY(), getY(), alpha);
         g.setColor(Color.RED);
