@@ -3,6 +3,7 @@ package engine.object;
 import engine.graphics.Renderable;
 import engine.update.Updatable;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 
 public abstract class GameObject implements Renderable, Updatable {
     // 現在位置
@@ -26,7 +27,7 @@ public abstract class GameObject implements Renderable, Updatable {
         update();
     }
 
-    public final void onDraw(Graphics g, double alpha) {
+    public final void onDraw(Graphics2D g, double alpha) {
         draw(g, alpha);
     }
 
