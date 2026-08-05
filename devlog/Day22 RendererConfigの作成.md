@@ -136,8 +136,10 @@ public class GameRenderer {
             clearScreen(g2);
             applyRenderingHints(g2);
             
+            double renderAlpha = config.isInterpolation() ? alpha : 1.0;
+
             for (GameObject o : objects) {
-                o.onDraw(g2, alpha);
+                o.onDraw(g2, renderAlpha);
             }
         } finally {
             g.dispose();
@@ -254,6 +256,16 @@ try {
     g.dispose();
 }
 ```
+### renderalphaの導入
+線形補完を実行するかどうかをinterpolationに基づいて決定します。もし、interpolationがtrueの場合は普通にalphaを使用して線形補完を行います。falseだった場合は、`alpha = 1.0`として、実質的に線形補完を無効化します。
+```java
+double renderAlpha = config.isInterpolation() ? alpha : 1.0;
+
+for (GameObject o : objects) {
+    o.onDraw(g, renderAlpha);
+}
+```
+
 
 ## GameEngineの変更
 GameEngineでGameRendererを使用しているので、コンストラクタにRendererConfigを渡します。
