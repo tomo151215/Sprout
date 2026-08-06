@@ -1,11 +1,7 @@
 package sample;
 
-import javax.swing.SwingUtilities;
-
 public class Main {
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new MyGame().run();
-        });
+        new PacmanGame().run();
     }
 }
