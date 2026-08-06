@@ -1,7 +1,6 @@
 package engine.graphics;
 
 import java.awt.Canvas;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferStrategy;
@@ -13,6 +12,7 @@ public class GameRenderer {
     private final Canvas canvas;
     private final BufferStrategy bs;
     private final RendererConfig config;
+    private final Camera2D camera;
 
     public GameRenderer(Canvas canvas, RendererConfig config) {
         if (canvas == null) {
@@ -23,6 +23,7 @@ public class GameRenderer {
         }
         this.canvas = canvas;
         this.config = config;
+        this.camera = new Camera2D();
         this.canvas.createBufferStrategy(3);
         this.bs = this.canvas.getBufferStrategy();
     }
@@ -33,12 +34,8 @@ public class GameRenderer {
         try {
             clearScreen(g);
             applyRenderingHints(g);
-
             double renderAlpha = config.isInterpolation() ? alpha : 1.0;
-
-            for (GameObject o : objects) {
-                o.onDraw(g, renderAlpha);
-            }
+            renderWorld(g, objects, renderAlpha);
 
             if (config.isDebugRender()) {
                 renderDebug(g);
@@ -62,5 +59,26 @@ public class GameRenderer {
                 : RenderingHints.VALUE_ANTIALIAS_OFF;
         g.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING, antiAliasingValue);
+    }
+
+    private void renderWorld(Graphics2D g, List<GameObject> objects, double renderAlpha) {
+        Graphics2D worldGraphics = (Graphics2D) g.create();
+        try {
+            camera.apply(worldGraphics);
+            for (GameObject o : objects) {
+                Graphics2D objectGraphics = (Graphics2D) worldGraphics.create();
+                try {
+                    o.onDraw(objectGraphics, renderAlpha);
+                } finally {
+                    objectGraphics.dispose();
+                }
+            }
+        } finally {
+            worldGraphics.dispose();
+        }
+    }
+
+    public Camera2D getCamera() {
+        return this.camera;
     }
 }

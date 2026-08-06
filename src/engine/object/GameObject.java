@@ -2,7 +2,6 @@ package engine.object;
 
 import engine.graphics.Renderable;
 import engine.update.Updatable;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 public abstract class GameObject implements Renderable, Updatable {

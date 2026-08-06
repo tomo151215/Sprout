@@ -3,6 +3,7 @@ package engine.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import engine.graphics.Camera2D;
 import engine.graphics.GameRenderer;
 import engine.graphics.RendererConfig;
 import engine.input.Keyboard;
@@ -84,6 +85,10 @@ public class GameEngine {
 
     public List<GameObject> getUpdateObjects() {
         return updateObjects;
+    }
+
+    public Camera2D getCamera() {
+        return renderer.getCamera();
     }
 
 }
