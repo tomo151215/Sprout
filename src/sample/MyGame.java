@@ -1,12 +1,10 @@
 package sample;
 
 import java.awt.Color;
-import java.awt.event.KeyEvent;
 
 import engine.core.GameApplication;
 import engine.core.GameSettings;
 import engine.graphics.RendererConfig;
-import engine.input.InputManager;
 
 public class MyGame extends GameApplication {
     private int UPS = 120;
