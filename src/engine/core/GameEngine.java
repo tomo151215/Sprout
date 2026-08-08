@@ -55,7 +55,7 @@ public class GameEngine {
         renderObjects.remove(object);
     }
 
-    public GameSettings getSetttings() {
+    public GameSettings getSettings() {
         return setttings;
     }
 
