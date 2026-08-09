@@ -47,7 +47,7 @@ public final class GameWindow {
         });
 
         frame.setTitle(set.getTitle());
-        frame.setResizable(set.isResizeable());
+        frame.setResizable(set.isResizable());
 
         if (set.isExitOnClose()) {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
