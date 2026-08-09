@@ -8,7 +8,7 @@ public final class GameSettings {
     private final boolean isVisible;
     private final boolean centerOnScreen;
     private final boolean exitOnClose;
-    private final boolean isResizeable;
+    private final boolean isResizable;
 
     private GameSettings(Builder builder) {
         this.width = builder.width;
@@ -17,7 +17,7 @@ public final class GameSettings {
         this.isVisible = builder.isVisible;
         this.centerOnScreen = builder.centerOnScreen;
         this.exitOnClose = builder.exitOnClose;
-        this.isResizeable = builder.isResizeable;
+        this.isResizable = builder.isResizable;
     }
 
     public static final class Builder {
@@ -27,7 +27,7 @@ public final class GameSettings {
         private boolean isVisible = true;
         private boolean centerOnScreen = true;
         private boolean exitOnClose = true;
-        private boolean isResizeable = false;
+        private boolean isResizable = false;
 
         public Builder size(int width, int height) {
             if (width <= 0) {
@@ -66,8 +66,8 @@ public final class GameSettings {
             return this;
         }
 
-        public Builder isResizeable(boolean isResizeable) {
-            this.isResizeable = isResizeable;
+        public Builder isResizable(boolean isResizeable) {
+            this.isResizable = isResizeable;
             return this;
         }
 
@@ -105,8 +105,8 @@ public final class GameSettings {
         return exitOnClose;
     }
 
-    public boolean isResizeable() {
-        return isResizeable;
+    public boolean isResizable() {
+        return isResizable;
     }
 
 }
