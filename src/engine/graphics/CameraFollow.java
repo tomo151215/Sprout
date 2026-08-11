@@ -41,7 +41,6 @@ public class CameraFollow {
         } else {
             camera.setPosition(targetCameraX, targetCameraY);
         }
-
     }
 
     public void setTarget(GameObject target) {
