@@ -48,7 +48,7 @@ public final class InputContext<T extends Enum<T>> {
     }
 
     public void clearMapping(T action) {
-        this.inputManager.clearAllMapping();
+        this.inputManager.clearMapping(action);
     }
 
     public void clearAllMapping() {
