@@ -20,6 +20,7 @@ public class GameEngine {
     private final GameLoop loop;
     private final List<GameObject> renderObjects = new ArrayList<>();
     private final List<GameObject> updateObjects = new ArrayList<>();
+    private final List<GameSystem> systems = new ArrayList<>();
 
     public GameEngine(GameSettings settings, int targetUps, RendererConfig rendererConfig) {
         if (settings == null) {
@@ -33,7 +34,7 @@ public class GameEngine {
         this.mouse = new Mouse();
         this.window = new GameWindow(settings, keyboard, mouse);
         this.renderer = new GameRenderer(window.getCanvas(), rendererConfig);
-        this.loop = new GameLoop(targetUps, renderer, renderObjects, updateObjects, keyboard, mouse);
+        this.loop = new GameLoop(targetUps, renderer, renderObjects, updateObjects, systems, keyboard, mouse);
     }
 
     public void start() {
@@ -53,6 +54,23 @@ public class GameEngine {
     public void removeObject(GameObject object) {
         updateObjects.remove(object);
         renderObjects.remove(object);
+    }
+
+    public void addSystem(GameSystem system) {
+        if (system == null) {
+            throw new IllegalArgumentException("system must not be null.");
+        }
+        if (systems.contains(system)) {
+            return;
+        }
+        systems.add(system);
+    }
+
+    public void removeSystem(GameSystem system) {
+        if (system == null) {
+            return;
+        }
+        systems.remove(system);
     }
 
     public GameSettings getSettings() {
