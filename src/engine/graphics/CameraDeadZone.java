@@ -54,7 +54,7 @@ public class CameraDeadZone {
         }
         // 対象の画面Y座標がデッドゾーン下端より下にある → カメラを下へ動かす
         if (targetScreenY > deadZoneBottomY) {
-            camera.move(0, targetScreenY - deadZoneTopY);
+            camera.move(0, targetScreenY - deadZoneBottomY);
         }
     }
 
