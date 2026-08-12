@@ -17,7 +17,7 @@ public final class RendererConfig {
 
     // ネストクラス
     public static final class Builder {
-        private Color backgroundColor;
+        private Color backgroundColor = Color.WHITE;
         private boolean antiAliasing;
         private boolean debugRender = false;
         private boolean interpolation = true;
@@ -53,9 +53,10 @@ public final class RendererConfig {
         }
     }
 
-    public static Builder builder(){
+    public static Builder builder() {
         return new Builder();
     }
+
     public Color getBackgroundColor() {
         return backgroundColor;
     }
