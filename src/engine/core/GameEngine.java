@@ -47,6 +47,14 @@ public class GameEngine {
     }
 
     public void addObject(GameObject object) {
+        if (object == null) {
+            throw new IllegalArgumentException("object must not be null.");
+        }
+
+        if (updateObjects.contains(object)) {
+            return;
+        }
+
         updateObjects.add(object);
         renderObjects.add(object);
     }
