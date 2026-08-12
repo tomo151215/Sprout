@@ -36,7 +36,7 @@ public class CameraLookAhead {
         if (diff > threshold) {
             return maxLookAhead;
         }
-        if (diff < threshold) {
+        if (diff < -threshold) {
             return -maxLookAhead;
         }
         return 0.0;
