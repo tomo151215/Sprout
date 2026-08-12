@@ -13,6 +13,7 @@ public final class GameLoop implements Runnable {
     private final GameRenderer renderer;
     private final List<GameObject> renderObjects;
     private final List<GameObject> updateObjects;
+    private final List<GameSystem> systems;
     private final Keyboard keyboard;
     private final Mouse mouse;
     private Thread th;
@@ -20,11 +21,12 @@ public final class GameLoop implements Runnable {
     private volatile boolean running;
 
     public GameLoop(int targetUps, GameRenderer renderer, List<GameObject> renderObjects,
-            List<GameObject> updateObjects, Keyboard keyboard, Mouse mouse) {
+            List<GameObject> updateObjects, List<GameSystem> systems, Keyboard keyboard, Mouse mouse) {
         this.targetUps = targetUps;
         this.renderer = renderer;
         this.renderObjects = renderObjects;
         this.updateObjects = updateObjects;
+        this.systems = systems;
         this.keyboard = keyboard;
         this.mouse = mouse;
     }
@@ -89,6 +91,9 @@ public final class GameLoop implements Runnable {
         mouse.updateSnapshot();
         for (GameObject u : updateObjects) {
             u.onUpdate();
+        }
+        for (GameSystem system : systems) {
+            system.update();
         }
     }
 

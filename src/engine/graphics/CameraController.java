@@ -1,8 +1,9 @@
 package engine.graphics;
 
+import engine.core.GameSystem;
 import engine.object.GameObject;
 
-public class CameraController {
+public final class CameraController implements GameSystem {
     private Camera2D camera;
     private GameObject target;
 
@@ -24,6 +25,7 @@ public class CameraController {
         this.viewportHeight = viewportHeight;
     }
 
+    @Override
     public void update() {
         if (target == null) {
             return;
@@ -60,7 +62,7 @@ public class CameraController {
     public void setTarget(GameObject target) {
         this.target = target;
         if (lookAhead != null) {
-            lookAhead.resetLookAhead(); 
+            lookAhead.resetLookAhead();
         }
     }
 
