@@ -9,6 +9,7 @@ import engine.graphics.RendererConfig;
 import engine.input.Keyboard;
 import engine.input.Mouse;
 import engine.object.GameObject;
+import engine.scene.SceneManager;
 import engine.window.GameWindow;
 
 public class GameEngine {
@@ -21,6 +22,7 @@ public class GameEngine {
     private final List<GameObject> renderObjects = new ArrayList<>();
     private final List<GameObject> updateObjects = new ArrayList<>();
     private final List<GameSystem> systems = new ArrayList<>();
+    private final SceneManager sceneManager;
 
     public GameEngine(GameSettings settings, int targetUps, RendererConfig rendererConfig) {
         if (settings == null) {
@@ -35,6 +37,8 @@ public class GameEngine {
         this.window = new GameWindow(settings, keyboard, mouse);
         this.renderer = new GameRenderer(window.getCanvas(), rendererConfig);
         this.loop = new GameLoop(targetUps, renderer, renderObjects, updateObjects, systems, keyboard, mouse);
+        this.sceneManager = new SceneManager(this);
+        addSystem(sceneManager);
     }
 
     public void start() {
@@ -115,6 +119,10 @@ public class GameEngine {
 
     public Camera2D getCamera() {
         return renderer.getCamera();
+    }
+
+    public SceneManager getSceneManager() {
+        return sceneManager;
     }
 
 }
