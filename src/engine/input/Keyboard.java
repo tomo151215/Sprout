@@ -69,15 +69,21 @@ public class Keyboard implements KeyListener {
         return isWithinBounds(keyCode) && pressed[keyCode];
     }
 
-    private boolean isWithinBounds(int keyCode) {
-        return keyCode >= 0 && keyCode < KEY_COUNT;
-    }
-
     public boolean isJustPressed(int keyCode) {
-        return isPressed(keyCode) && !previousPressed[keyCode];
+        if (!isWithinBounds(keyCode)) {
+            return false;
+        }
+        return pressed[keyCode] && !previousPressed[keyCode];
     }
 
     public boolean isJustReleased(int keyCode) {
-        return !isPressed(keyCode) && previousPressed[keyCode];
+        if (!isWithinBounds(keyCode)) {
+            return false;
+        }
+        return !pressed[keyCode] && previousPressed[keyCode];
+    }
+
+    private boolean isWithinBounds(int keyCode) {
+        return keyCode >= 0 && keyCode < KEY_COUNT;
     }
 }
