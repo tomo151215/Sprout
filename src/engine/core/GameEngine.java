@@ -51,7 +51,11 @@ public class GameEngine {
 
     public void stop() {
         loop.stop();
-        audioManager.close();
+        try {
+            audioManager.close();
+        } finally {
+            window.close();
+        }
     }
 
     public void addObject(GameObject object) {

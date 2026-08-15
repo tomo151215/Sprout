@@ -93,4 +93,8 @@ public final class GameWindow {
     public Canvas getCanvas() {
         return canvas;
     }
+
+    public void close() {
+        frame.dispose();
+    }
 }
