@@ -72,6 +72,15 @@ public final class GameSettings {
         }
 
         public GameSettings build() {
+            if (width <= 0 || height <= 0) {
+                throw new IllegalStateException(
+                        "size must be configured before build().");
+            }
+
+            if (title == null || title.isBlank()) {
+                throw new IllegalStateException(
+                        "title must be configured before build().");
+            }
             return new GameSettings(this);
         }
 
