@@ -48,7 +48,7 @@ public final void update() {
     if (!started) { 
         return; 
     } 
-    onStart(); 
+    onUpdate(); 
 }
 ```
 Sceneが開始されていない場合は、何もしません。`onUpdate()`は、ゲーム制作者が毎フレームの処理を書くためのメソッドです。Sceneによっては毎フレームの特別な処理が不要な場合もあるので、空実装にします。

@@ -18,7 +18,7 @@ public abstract class Scene {
         if (!started) {
             return;
         }
-        onStart();
+        onUpdate();
     }
 
     public final void end() {
