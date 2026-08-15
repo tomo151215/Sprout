@@ -10,8 +10,27 @@ public abstract class Scene {
         if (started) {
             return;
         }
+
         started = true;
-        onStart();
+
+        try {
+            onStart();
+        } catch (RuntimeException | Error e) {
+            started = false;
+            throw e;
+        }
+    }
+
+    public final void end() {
+        if (!started) {
+            return;
+        }
+
+        try {
+            onEnd();
+        } finally {
+            started = false;
+        }
     }
 
     public final void update() {
@@ -19,14 +38,6 @@ public abstract class Scene {
             return;
         }
         onUpdate();
-    }
-
-    public final void end() {
-        if (!started) {
-            return;
-        }
-        onEnd();
-        started = false;
     }
 
     public abstract void onStart();
