@@ -10,23 +10,34 @@ public abstract class Scene {
         if (started) {
             return;
         }
-        started = true;
-        onStart();
-    }
 
-    public final void update() {
-        if (!started) {
-            return;
+        started = true;
+
+        try {
+            onStart();
+        } catch (RuntimeException | Error e) {
+            started = false;
+            throw e;
         }
-        onStart();
     }
 
     public final void end() {
         if (!started) {
             return;
         }
-        onEnd();
-        started = false;
+
+        try {
+            onEnd();
+        } finally {
+            started = false;
+        }
+    }
+
+    public final void update() {
+        if (!started) {
+            return;
+        }
+        onUpdate();
     }
 
     public abstract void onStart();

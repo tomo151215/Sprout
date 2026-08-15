@@ -20,10 +20,12 @@ public final class GameWindow {
     private final Canvas canvas = new Canvas();
     private final GameSettings set;
     private final Keyboard keyboard;
+    private final Mouse mouse;
 
     public GameWindow(GameSettings set, Keyboard keyboard, Mouse mouse) {
         this.set = set;
         this.keyboard = keyboard;
+        this.mouse = mouse;
 
         canvas.setPreferredSize(new Dimension(set.getWidth(), set.getHeight()));
         canvas.addKeyListener(keyboard);
@@ -36,6 +38,7 @@ public final class GameWindow {
             @Override
             public void focusLost(FocusEvent e) {
                 GameWindow.this.keyboard.clear();
+                GameWindow.this.mouse.clear();
             }
         });
 
@@ -59,6 +62,7 @@ public final class GameWindow {
             @Override
             public void windowLostFocus(WindowEvent e) {
                 GameWindow.this.keyboard.clear();
+                GameWindow.this.mouse.clear();
             }
 
             @Override
@@ -88,5 +92,9 @@ public final class GameWindow {
 
     public Canvas getCanvas() {
         return canvas;
+    }
+
+    public void close() {
+        frame.dispose();
     }
 }

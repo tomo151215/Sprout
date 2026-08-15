@@ -22,6 +22,11 @@ public final class GameLoop implements Runnable {
 
     public GameLoop(int targetUps, GameRenderer renderer, List<GameObject> renderObjects,
             List<GameObject> updateObjects, List<GameSystem> systems, Keyboard keyboard, Mouse mouse) {
+        if (targetUps <= 0) {
+            throw new IllegalArgumentException(
+                    "targetUps must be greater than 0.");
+        }
+
         this.targetUps = targetUps;
         this.renderer = renderer;
         this.renderObjects = renderObjects;
@@ -32,7 +37,7 @@ public final class GameLoop implements Runnable {
     }
 
     public synchronized void start() {
-        if (running) {
+        if (running || (th != null && th.isAlive())) {
             return;
         }
         running = true;
@@ -54,31 +59,39 @@ public final class GameLoop implements Runnable {
 
     @Override
     public void run() {
-        final double nsPerUpdate = 1_000_000_000.0 / targetUps;
-        final int maxUpdatesPerFrame = 5;
+        try {
+            final double nsPerUpdate = 1_000_000_000.0 / targetUps;
+            final int maxUpdatesPerFrame = 5;
 
-        long lastTime = System.nanoTime();
-        double accumulator = 0.0;
+            long lastTime = System.nanoTime();
+            double accumulator = 0.0;
 
-        while (running) {
-            int updateCount = 0;
-            long now = System.nanoTime();
-            long elapsed = now - lastTime;
-            lastTime = now;
-            accumulator += elapsed;
-            while (accumulator >= nsPerUpdate && updateCount < maxUpdatesPerFrame) {
-                update();
-                accumulator -= nsPerUpdate;
-                updateCount++;
+            while (running) {
+                int updateCount = 0;
+                long now = System.nanoTime();
+                long elapsed = now - lastTime;
+                lastTime = now;
+                accumulator += elapsed;
+                while (running
+                        && accumulator >= nsPerUpdate
+                        && updateCount < maxUpdatesPerFrame) {
+                    update();
+                    accumulator -= nsPerUpdate;
+                    updateCount++;
+                }
+                if (!running) {
+                    break;
+                }
+                if (updateCount == maxUpdatesPerFrame
+                        && accumulator >= nsPerUpdate) {
+                    accumulator %= nsPerUpdate;
+                }
+                double alpha = accumulator / nsPerUpdate;
+                render(alpha);
+                sleep();
             }
-
-            if (updateCount == maxUpdatesPerFrame) {
-                accumulator = 0.0;
-            }
-
-            double alpha = accumulator / nsPerUpdate;
-            render(alpha);
-            sleep();
+        } finally {
+            running = false;
         }
     }
 

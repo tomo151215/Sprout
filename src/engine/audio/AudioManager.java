@@ -15,26 +15,52 @@ public class AudioManager {
 
     private Clip loadClip(String path) {
         if (path == null || path.isBlank()) {
-            throw new IllegalArgumentException("path must not be null or blank.");
+            throw new IllegalArgumentException(
+                    "path must not be null or blank.");
         }
+
+        Clip clip = null;
+
         try (AudioInputStream stream = AudioSystem.getAudioInputStream(new File(path))) {
-            Clip clip = AudioSystem.getClip();
+
+            clip = AudioSystem.getClip();
             clip.open(stream);
             return clip;
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
-            throw new IllegalArgumentException("Failed to load audio: " + path, e);
+
+        } catch (UnsupportedAudioFileException
+                | IOException
+                | LineUnavailableException e) {
+
+            if (clip != null) {
+                try {
+                    clip.close();
+                } catch (RuntimeException closeError) {
+                    e.addSuppressed(closeError);
+                }
+            }
+
+            throw new IllegalArgumentException(
+                    "Failed to load audio: " + path, e);
         }
     }
 
     public void playSe(String path) {
         Clip clip = loadClip(path);
-        clip.addLineListener(event -> {
-            if (event.getType() == LineEvent.Type.STOP) {
-                clip.close();
-            }
-        });
-        clip.setFramePosition(0);
-        clip.start();
+
+        try {
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    clip.close();
+                }
+            });
+
+            clip.setFramePosition(0);
+            clip.start();
+
+        } catch (RuntimeException e) {
+            clip.close();
+            throw e;
+        }
     }
 
     public void playBgm(String path) {

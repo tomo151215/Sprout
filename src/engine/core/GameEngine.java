@@ -1,7 +1,7 @@
 package engine.core;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import engine.audio.AudioManager;
 import engine.graphics.Camera2D;
@@ -20,9 +20,9 @@ public class GameEngine {
     private final GameWindow window;
     private final GameRenderer renderer;
     private final GameLoop loop;
-    private final List<GameObject> renderObjects = new ArrayList<>();
-    private final List<GameObject> updateObjects = new ArrayList<>();
-    private final List<GameSystem> systems = new ArrayList<>();
+    private final List<GameObject> renderObjects = new CopyOnWriteArrayList<>();
+    private final List<GameObject> updateObjects = new CopyOnWriteArrayList<>();
+    private final List<GameSystem> systems = new CopyOnWriteArrayList<>();
     private final SceneManager sceneManager;
     private final AudioManager audioManager;
 
@@ -51,7 +51,11 @@ public class GameEngine {
 
     public void stop() {
         loop.stop();
-        audioManager.close();
+        try {
+            audioManager.close();
+        } finally {
+            window.close();
+        }
     }
 
     public void addObject(GameObject object) {
@@ -114,11 +118,11 @@ public class GameEngine {
     }
 
     public List<GameObject> getRenderObjects() {
-        return renderObjects;
+        return List.copyOf(renderObjects);
     }
 
     public List<GameObject> getUpdateObjects() {
-        return updateObjects;
+        return List.copyOf(updateObjects);
     }
 
     public Camera2D getCamera() {

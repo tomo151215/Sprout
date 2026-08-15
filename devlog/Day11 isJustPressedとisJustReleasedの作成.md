@@ -25,8 +25,11 @@ public void endFrame() {
 ## `isJustPressed()`の実装
 押した瞬間1回だけ実行するには、pressedが`false`から`true`になったタイミングで実行すればよいです。
 ```java
-public boolean isJustPressed(int keyCode) { 
-    return isPressed(keyCode) && !previousPressed[keyCode]; 
+public boolean isJustPressed(int keyCode) {
+    if (!isWithinBounds(keyCode)) {
+        return false;
+    }
+    return pressed[keyCode] && !previousPressed[keyCode];
 }
 ```
 
@@ -34,6 +37,9 @@ public boolean isJustPressed(int keyCode) {
 離した瞬間に実行を辞める場合、pressedが`true`から`false`になったタイミングで実行を辞めればよいです。
 ```java
 public boolean isJustReleased(int keyCode) {
-    return !isPressed(keyCode) && previousPressed[keyCode];
+    if (!isWithinBounds(keyCode)) {
+        return false;
+    }
+    return !pressed[keyCode] && previousPressed[keyCode];
 }
 ```

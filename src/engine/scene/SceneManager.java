@@ -25,22 +25,39 @@ public class SceneManager implements GameSystem {
 
     public void setScene(Scene scene) {
         if (scene == null) {
-            throw new IllegalArgumentException("scene must not be null.");
+            throw new IllegalArgumentException(
+                    "scene must not be null.");
         }
+
         if (currentScene != null) {
-            currentScene.end();
+            try {
+                currentScene.end();
+            } finally {
+                currentScene = null;
+            }
         }
-        this.currentScene = scene;
-        currentScene.attach(engine);
-        currentScene.start();
+
+        currentScene = scene;
+
+        try {
+            currentScene.attach(engine);
+            currentScene.start();
+        } catch (RuntimeException | Error e) {
+            currentScene = null;
+            throw e;
+        }
     }
 
     public void endCurrentScene() {
         if (currentScene == null) {
             return;
         }
-        currentScene.end();
-        currentScene = null;
+
+        try {
+            currentScene.end();
+        } finally {
+            currentScene = null;
+        }
     }
 
     public Scene getCurrentScene() {

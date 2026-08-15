@@ -27,16 +27,16 @@ public final class Mouse implements MouseListener, MouseMotionListener, MouseWhe
     private final Object lock = new Object();
 
     public void updateSnapshot() {
-        previousX = x;
-        previousY = y;
-        System.arraycopy(
-                pressed,
-                0,
-                previousPressed,
-                0,
-                BUTTON_COUNT);
-
         synchronized (lock) {
+            previousX = x;
+            previousY = y;
+            System.arraycopy(
+                    pressed,
+                    0,
+                    previousPressed,
+                    0,
+                    BUTTON_COUNT);
+
             x = currentX;
             y = currentY;
             System.arraycopy(
@@ -150,17 +150,24 @@ public final class Mouse implements MouseListener, MouseMotionListener, MouseWhe
     }
 
     public boolean isPressed(MouseButton button) {
-        return pressed[index(button)];
+        int i = index(button);
+        synchronized (lock) {
+            return pressed[i];
+        }
     }
 
     public boolean isJustPressed(MouseButton button) {
         int i = index(button);
-        return pressed[i] && !previousPressed[i];
+        synchronized (lock) {
+            return pressed[i] && !previousPressed[i];
+        }
     }
 
     public boolean isJustReleased(MouseButton button) {
         int i = index(button);
-        return !pressed[i] && previousPressed[i];
+        synchronized (lock) {
+            return !pressed[i] && previousPressed[i];
+        }
     }
 
     public int getWheelRotation() {

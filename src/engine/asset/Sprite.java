@@ -17,7 +17,7 @@ public class Sprite {
     }
 
     public int getHeight() {
-        return image.getWidth();
+        return image.getHeight();
     }
 
     public BufferedImage getImage() {
