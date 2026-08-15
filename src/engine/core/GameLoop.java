@@ -22,6 +22,11 @@ public final class GameLoop implements Runnable {
 
     public GameLoop(int targetUps, GameRenderer renderer, List<GameObject> renderObjects,
             List<GameObject> updateObjects, List<GameSystem> systems, Keyboard keyboard, Mouse mouse) {
+        if (targetUps <= 0) {
+            throw new IllegalArgumentException(
+                    "targetUps must be greater than 0.");
+        }
+
         this.targetUps = targetUps;
         this.renderer = renderer;
         this.renderObjects = renderObjects;
