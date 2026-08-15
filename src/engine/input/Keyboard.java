@@ -13,14 +13,13 @@ public class Keyboard implements KeyListener {
     private final Object lock = new Object();
 
     public void updateSnapshot() {
-        System.arraycopy(
-                pressed,
-                0,
-                previousPressed,
-                0,
-                KEY_COUNT);
-
         synchronized (lock) {
+            System.arraycopy(
+                    pressed,
+                    0,
+                    previousPressed,
+                    0,
+                    KEY_COUNT);
             System.arraycopy(
                     currentPressed,
                     0,
