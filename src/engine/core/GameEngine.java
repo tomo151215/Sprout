@@ -3,6 +3,7 @@ package engine.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import engine.audio.AudioManager;
 import engine.graphics.Camera2D;
 import engine.graphics.GameRenderer;
 import engine.graphics.RendererConfig;
@@ -23,6 +24,7 @@ public class GameEngine {
     private final List<GameObject> updateObjects = new ArrayList<>();
     private final List<GameSystem> systems = new ArrayList<>();
     private final SceneManager sceneManager;
+    private final AudioManager audioManager;
 
     public GameEngine(GameSettings settings, int targetUps, RendererConfig rendererConfig) {
         if (settings == null) {
@@ -39,6 +41,7 @@ public class GameEngine {
         this.loop = new GameLoop(targetUps, renderer, renderObjects, updateObjects, systems, keyboard, mouse);
         this.sceneManager = new SceneManager(this);
         addSystem(sceneManager);
+        this.audioManager = new AudioManager();
     }
 
     public void start() {
@@ -48,6 +51,7 @@ public class GameEngine {
 
     public void stop() {
         loop.stop();
+        audioManager.close();
     }
 
     public void addObject(GameObject object) {
@@ -125,4 +129,7 @@ public class GameEngine {
         return sceneManager;
     }
 
+    public AudioManager getAudioManager() {
+        return audioManager;
+    }
 }
