@@ -24,4 +24,8 @@ public final class ImageLoader {
             throw new IllegalArgumentException("Failed to load image: " + path, e);
         }
     }
+
+    public static Sprite loadSprite(String path) {
+        return new Sprite(load(path));
+    }
 }
