@@ -1,6 +1,5 @@
 package engine.input;
 
-import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
 import java.util.List;
