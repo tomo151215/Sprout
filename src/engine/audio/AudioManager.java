@@ -10,77 +10,89 @@ import javax.sound.sampled.LineEvent;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-public class AudioManager {
+public final class AudioManager implements AutoCloseable {
     private Clip bgmClip;
-
-    private Clip loadClip(String path) {
-        if (path == null || path.isBlank()) {
-            throw new IllegalArgumentException(
-                    "path must not be null or blank.");
-        }
-
-        Clip clip = null;
-
-        try (AudioInputStream stream = AudioSystem.getAudioInputStream(new File(path))) {
-
-            clip = AudioSystem.getClip();
-            clip.open(stream);
-            return clip;
-
-        } catch (UnsupportedAudioFileException
-                | IOException
-                | LineUnavailableException e) {
-
-            if (clip != null) {
-                try {
-                    clip.close();
-                } catch (RuntimeException closeError) {
-                    e.addSuppressed(closeError);
-                }
-            }
-
-            throw new IllegalArgumentException(
-                    "Failed to load audio: " + path, e);
-        }
-    }
 
     public void playSe(String path) {
         Clip clip = loadClip(path);
 
         try {
-            clip.addLineListener(event -> {
-                if (event.getType() == LineEvent.Type.STOP) {
-                    clip.close();
-                }
-            });
-
+            clip.addLineListener(event -> closeWhenPlaybackStops(event, clip));
             clip.setFramePosition(0);
             clip.start();
-
         } catch (RuntimeException e) {
-            clip.close();
+            closeClip(clip);
             throw e;
         }
     }
 
-    public void playBgm(String path) {
+    public synchronized void playBgm(String path) {
         stopBgm();
-        bgmClip = loadClip(path);
-        bgmClip.setFramePosition(0);
-        bgmClip.loop(Clip.LOOP_CONTINUOUSLY);
-        bgmClip.start();
+
+        Clip clip = loadClip(path);
+        try {
+            clip.setFramePosition(0);
+            clip.loop(Clip.LOOP_CONTINUOUSLY);
+            clip.start();
+            bgmClip = clip;
+        } catch (RuntimeException e) {
+            closeClip(clip);
+            throw e;
+        }
     }
 
-    public void stopBgm() {
-        if (bgmClip == null) {
+    public synchronized void stopBgm() {
+        Clip clip = bgmClip;
+        bgmClip = null;
+
+        if (clip == null) {
             return;
         }
-        bgmClip.stop();
-        bgmClip.close();
-        bgmClip = null;
+
+        clip.stop();
+        closeClip(clip);
     }
 
+    @Override
     public void close() {
         stopBgm();
+    }
+
+    private Clip loadClip(String path) {
+        validatePath(path);
+
+        Clip clip = null;
+        try (AudioInputStream stream = AudioSystem.getAudioInputStream(new File(path))) {
+            clip = AudioSystem.getClip();
+            clip.open(stream);
+            return clip;
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            if (clip != null) {
+                try {
+                    closeClip(clip);
+                } catch (RuntimeException closeError) {
+                    e.addSuppressed(closeError);
+                }
+            }
+            throw new IllegalArgumentException("Failed to load audio: " + path, e);
+        }
+    }
+
+    private void closeWhenPlaybackStops(LineEvent event, Clip clip) {
+        if (event.getType() == LineEvent.Type.STOP) {
+            closeClip(clip);
+        }
+    }
+
+    private void closeClip(Clip clip) {
+        if (clip.isOpen()) {
+            clip.close();
+        }
+    }
+
+    private void validatePath(String path) {
+        if (path == null || path.isBlank()) {
+            throw new IllegalArgumentException("path must not be null or blank.");
+        }
     }
 }

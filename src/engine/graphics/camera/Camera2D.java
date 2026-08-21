@@ -1,8 +1,8 @@
-package engine.graphics;
+package engine.graphics.camera;
 
 import java.awt.Graphics2D;
 
-public class Camera2D {
+public final class Camera2D {
     private double x;
     private double y;
 
@@ -16,11 +16,11 @@ public class Camera2D {
     }
 
     public double getX() {
-        return this.x;
+        return x;
     }
 
     public double getY() {
-        return this.y;
+        return y;
     }
 
     public void setPosition(double x, double y) {
@@ -28,16 +28,16 @@ public class Camera2D {
         this.y = y;
     }
 
-    public void move(double dx, double dy) {
-        this.x += dx;
-        this.y += dy;
+    public void move(double deltaX, double deltaY) {
+        x += deltaX;
+        y += deltaY;
     }
 
-    public void apply(Graphics2D g) {
-        if (g == null) {
+    public void apply(Graphics2D graphics) {
+        if (graphics == null) {
             throw new IllegalArgumentException("graphics must not be null.");
         }
-        g.translate(-x, -y);
+        graphics.translate(-x, -y);
     }
 
     public double screenToWorldX(double screenX) {

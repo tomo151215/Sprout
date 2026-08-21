@@ -1,69 +1,86 @@
 package engine.object;
 
-import engine.graphics.Renderable;
-import engine.update.Updatable;
 import java.awt.Graphics2D;
 
+import engine.graphics.Renderable;
+import engine.update.Updatable;
+
 public abstract class GameObject implements Renderable, Updatable {
-    // 現在位置
     private double x;
     private double y;
-
-    // 前フレームの位置
     private double previousX;
     private double previousY;
 
-    public GameObject(double x, double y) {
+    protected GameObject(double x, double y) {
         this.x = x;
         this.y = y;
         this.previousX = x;
         this.previousY = y;
     }
 
-    public final void onUpdate() {
-        this.previousX = x;
-        this.previousY = y;
-        update();
+    @Override
+    public final void update() {
+        savePreviousPosition();
+        onUpdate();
     }
 
-    public final void onDraw(Graphics2D g, double alpha) {
-        draw(g, alpha);
+    @Override
+    public final void draw(Graphics2D graphics, double alpha) {
+        onDraw(graphics, alpha);
+    }
+
+    protected abstract void onUpdate();
+
+    protected abstract void onDraw(Graphics2D graphics, double alpha);
+
+    public final double getX() {
+        return x;
+    }
+
+    public final double getY() {
+        return y;
+    }
+
+    public final double getPreviousX() {
+        return previousX;
+    }
+
+    public final double getPreviousY() {
+        return previousY;
+    }
+
+    public final void setX(double x) {
+        this.x = x;
+    }
+
+    public final void setY(double y) {
+        this.y = y;
+    }
+
+    public final void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public final void move(double deltaX, double deltaY) {
+        x += deltaX;
+        y += deltaY;
+    }
+
+    protected final double interpolatedX(double alpha) {
+        return lerp(previousX, x, alpha);
+    }
+
+    protected final double interpolatedY(double alpha) {
+        return lerp(previousY, y, alpha);
     }
 
     protected final double lerp(double start, double end, double alpha) {
         return start + (end - start) * alpha;
     }
 
-    public double getX() {
-        return x;
+    private void savePreviousPosition() {
+        previousX = x;
+        previousY = y;
     }
-
-    public double getY() {
-        return y;
-    }
-
-    public double getPreviousX() {
-        return previousX;
-    }
-
-    public double getPreviousY() {
-        return previousY;
-    }
-
-    public void setX(double x) {
-        this.x = x;
-    }
-
-    public void setY(double y) {
-        this.y = y;
-    }
-
-    public void setPreviousX(double previousX) {
-        this.previousX = previousX;
-    }
-
-    public void setPreviousY(double previousY) {
-        this.previousY = previousY;
-    }
-
 }

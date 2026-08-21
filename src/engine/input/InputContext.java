@@ -3,7 +3,6 @@ package engine.input;
 import java.util.List;
 
 public final class InputContext<T extends Enum<T>> {
-    private final Keyboard keyboard;
     private final Mouse mouse;
     private final InputManager<T> inputManager;
 
@@ -20,118 +19,92 @@ public final class InputContext<T extends Enum<T>> {
             throw new IllegalArgumentException("actionClass must not be null.");
         }
 
-        this.keyboard = keyboard;
         this.mouse = mouse;
         this.inputManager = new InputManager<>(keyboard, actionClass);
     }
 
-    // InputManagerのラッピング
-
-    public void addMapping(T action, int keycode) {
-        this.inputManager.addMapping(action, keycode);
+    public void addMapping(T action, int keyCode) {
+        inputManager.addMapping(action, keyCode);
     }
 
-    public boolean isPressed(T action) {
-        return enabled && this.inputManager.isPressed(action);
-    }
-
-    public boolean isJustPressed(T action) {
-        return enabled && this.inputManager.isJustPressed(action);
-    }
-
-    public boolean isJustReleased(T action) {
-        return enabled && this.inputManager.isJustReleased(action);
-    }
-
-    public void removeMapping(T action, int keycode) {
-        this.inputManager.removeMapping(action, keycode);
+    public void removeMapping(T action, int keyCode) {
+        inputManager.removeMapping(action, keyCode);
     }
 
     public void clearMapping(T action) {
-        this.inputManager.clearMapping(action);
+        inputManager.clearMapping(action);
     }
 
-    public void clearAllMapping() {
-        this.inputManager.clearAllMapping();
+    public void clearAllMappings() {
+        inputManager.clearAllMappings();
     }
 
     public List<Integer> getMappings(T action) {
-        return this.inputManager.getMappings(action);
+        return inputManager.getMappings(action);
     }
 
     public boolean hasMapping(T action, int keyCode) {
-        return this.inputManager.hasMapping(action, keyCode);
+        return inputManager.hasMapping(action, keyCode);
     }
 
-    // Mouseのラップ
+    public boolean isPressed(T action) {
+        return enabled && inputManager.isPressed(action);
+    }
+
+    public boolean isJustPressed(T action) {
+        return enabled && inputManager.isJustPressed(action);
+    }
+
+    public boolean isJustReleased(T action) {
+        return enabled && inputManager.isJustReleased(action);
+    }
+
     public int getMouseX() {
-        return this.mouse.getX();
+        return mouse.getX();
     }
 
     public int getMouseY() {
-        return this.mouse.getY();
+        return mouse.getY();
     }
 
     public int getMousePreviousX() {
-        return this.mouse.getPreviousX();
+        return mouse.getPreviousX();
     }
 
     public int getMousePreviousY() {
-        return this.mouse.getPreviousY();
+        return mouse.getPreviousY();
     }
 
     public int getMouseDeltaX() {
-        return this.mouse.getDeltaX();
+        return mouse.getDeltaX();
     }
 
     public int getMouseDeltaY() {
-        return this.mouse.getDeltaY();
+        return mouse.getDeltaY();
     }
 
     public boolean isMousePressed(MouseButton button) {
-        return enabled && this.mouse.isPressed(button);
+        return enabled && mouse.isPressed(button);
     }
 
     public boolean isMouseJustPressed(MouseButton button) {
-        return enabled && this.mouse.isJustPressed(button);
+        return enabled && mouse.isJustPressed(button);
     }
 
     public boolean isMouseJustReleased(MouseButton button) {
-        return enabled && this.mouse.isJustReleased(button);
+        return enabled && mouse.isJustReleased(button);
     }
 
     public int getMouseWheelRotation() {
-        return enabled ? this.mouse.getWheelRotation() : 0;
+        return enabled ? mouse.getWheelRotation() : 0;
     }
 
-    // getter
-    public Keyboard getKeyboard() {
-        return keyboard;
-    }
-
-    public Mouse getMouse() {
-        return mouse;
-    }
-
-    public InputManager<T> getInputManager() {
-        return inputManager;
-    }
-
-    // 入力状態リセット
-    public void clear() {
-        keyboard.clear();
-        mouse.clear();
-    }
-
-    // 入力無効化、有効化
     public void enable() {
-        clear();
-        this.enabled = true;
+        enabled = true;
     }
 
     public void disable() {
-        clear();
-        this.enabled = false;
+        enabled = false;
     }
 
     public boolean isEnabled() {

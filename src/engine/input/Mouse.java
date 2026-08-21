@@ -1,14 +1,12 @@
 package engine.input;
 
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.util.Arrays;
 
-public final class Mouse implements MouseListener, MouseMotionListener, MouseWheelListener {
-    private final int BUTTON_COUNT = MouseButton.values().length;
+public final class Mouse extends MouseAdapter {
+    private static final int BUTTON_COUNT = MouseButton.values().length;
 
     private final boolean[] currentPressed = new boolean[BUTTON_COUNT];
     private final boolean[] pressed = new boolean[BUTTON_COUNT];
@@ -30,87 +28,146 @@ public final class Mouse implements MouseListener, MouseMotionListener, MouseWhe
         synchronized (lock) {
             previousX = x;
             previousY = y;
-            System.arraycopy(
-                    pressed,
-                    0,
-                    previousPressed,
-                    0,
-                    BUTTON_COUNT);
+            System.arraycopy(pressed, 0, previousPressed, 0, BUTTON_COUNT);
 
             x = currentX;
             y = currentY;
-            System.arraycopy(
-                    currentPressed,
-                    0,
-                    pressed,
-                    0,
-                    BUTTON_COUNT);
+            System.arraycopy(currentPressed, 0, pressed, 0, BUTTON_COUNT);
+
             wheelRotation = currentWheelRotation;
             currentWheelRotation = 0;
         }
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
+    public void mousePressed(MouseEvent event) {
+        updateButtonState(event, true);
     }
 
     @Override
-    public void mouseEntered(MouseEvent e) {
+    public void mouseReleased(MouseEvent event) {
+        updateButtonState(event, false);
     }
 
     @Override
-    public void mouseExited(MouseEvent e) {
+    public void mouseMoved(MouseEvent event) {
+        updateCurrentPosition(event);
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
-        MouseButton button = toMouseButton(e.getButton());
-        if (button != null) {
-            synchronized (lock) {
-                currentPressed[index(button)] = true;
-            }
-            updateCurrentPosition(e);
-        }
+    public void mouseDragged(MouseEvent event) {
+        updateCurrentPosition(event);
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
-        MouseButton button = toMouseButton(e.getButton());
-        if (button != null) {
-            synchronized (lock) {
-                currentPressed[index(button)] = false;
-            }
-            updateCurrentPosition(e);
-        }
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        updateCurrentPosition(e);
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        updateCurrentPosition(e);
-    }
-
-    @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
+    public void mouseWheelMoved(MouseWheelEvent event) {
         synchronized (lock) {
-            currentWheelRotation += e.getWheelRotation();
+            currentWheelRotation += event.getWheelRotation();
+            setCurrentPosition(event);
         }
-        updateCurrentPosition(e);
     }
 
-    private void updateCurrentPosition(MouseEvent e) {
+    public int getX() {
         synchronized (lock) {
-            currentX = e.getX();
-            currentY = e.getY();
+            return x;
         }
     }
 
-    private MouseButton toMouseButton(int awtButtton) {
-        return switch (awtButtton) {
+    public int getY() {
+        synchronized (lock) {
+            return y;
+        }
+    }
+
+    public int getPreviousX() {
+        synchronized (lock) {
+            return previousX;
+        }
+    }
+
+    public int getPreviousY() {
+        synchronized (lock) {
+            return previousY;
+        }
+    }
+
+    public int getDeltaX() {
+        synchronized (lock) {
+            return x - previousX;
+        }
+    }
+
+    public int getDeltaY() {
+        synchronized (lock) {
+            return y - previousY;
+        }
+    }
+
+    public boolean isPressed(MouseButton button) {
+        int index = index(button);
+
+        synchronized (lock) {
+            return pressed[index];
+        }
+    }
+
+    public boolean isJustPressed(MouseButton button) {
+        int index = index(button);
+
+        synchronized (lock) {
+            return pressed[index] && !previousPressed[index];
+        }
+    }
+
+    public boolean isJustReleased(MouseButton button) {
+        int index = index(button);
+
+        synchronized (lock) {
+            return !pressed[index] && previousPressed[index];
+        }
+    }
+
+    public int getWheelRotation() {
+        synchronized (lock) {
+            return wheelRotation;
+        }
+    }
+
+    public void clear() {
+        synchronized (lock) {
+            Arrays.fill(currentPressed, false);
+            Arrays.fill(pressed, false);
+            Arrays.fill(previousPressed, false);
+            currentWheelRotation = 0;
+            wheelRotation = 0;
+        }
+    }
+
+    private void updateButtonState(MouseEvent event, boolean isPressed) {
+        MouseButton button = toMouseButton(event.getButton());
+        if (button == null) {
+            return;
+        }
+
+        synchronized (lock) {
+            currentPressed[index(button)] = isPressed;
+            setCurrentPosition(event);
+        }
+    }
+
+    private void updateCurrentPosition(MouseEvent event) {
+        synchronized (lock) {
+            setCurrentPosition(event);
+        }
+    }
+
+    private void setCurrentPosition(MouseEvent event) {
+        currentX = event.getX();
+        currentY = event.getY();
+    }
+
+    private MouseButton toMouseButton(int awtButton) {
+        return switch (awtButton) {
             case MouseEvent.BUTTON1 -> MouseButton.LEFT;
             case MouseEvent.BUTTON2 -> MouseButton.MIDDLE;
             case MouseEvent.BUTTON3 -> MouseButton.RIGHT;
@@ -123,64 +180,5 @@ public final class Mouse implements MouseListener, MouseMotionListener, MouseWhe
             throw new IllegalArgumentException("button must not be null.");
         }
         return button.ordinal();
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public int getPreviousX() {
-        return previousX;
-    }
-
-    public int getPreviousY() {
-        return previousY;
-    }
-
-    public int getDeltaX() {
-        return x - previousX;
-    }
-
-    public int getDeltaY() {
-        return y - previousY;
-    }
-
-    public boolean isPressed(MouseButton button) {
-        int i = index(button);
-        synchronized (lock) {
-            return pressed[i];
-        }
-    }
-
-    public boolean isJustPressed(MouseButton button) {
-        int i = index(button);
-        synchronized (lock) {
-            return pressed[i] && !previousPressed[i];
-        }
-    }
-
-    public boolean isJustReleased(MouseButton button) {
-        int i = index(button);
-        synchronized (lock) {
-            return !pressed[i] && previousPressed[i];
-        }
-    }
-
-    public int getWheelRotation() {
-        return wheelRotation;
-    }
-
-    public void clear() {
-        synchronized (lock) {
-            Arrays.fill(currentPressed, false);
-            Arrays.fill(pressed, false);
-            Arrays.fill(previousPressed, false);
-            currentWheelRotation = 0;
-            wheelRotation = 0;
-        }
     }
 }

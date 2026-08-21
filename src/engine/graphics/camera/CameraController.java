@@ -1,28 +1,36 @@
-package engine.graphics;
+package engine.graphics.camera;
 
-import engine.core.GameSystem;
 import engine.object.GameObject;
+import engine.system.GameSystem;
 
 public final class CameraController implements GameSystem {
-    private Camera2D camera;
-    private GameObject target;
+    private final Camera2D camera;
 
+    private GameObject target;
     private double viewportWidth;
     private double viewportHeight;
 
+    private CameraFollow follow;
     private CameraDeadZone deadZone;
     private CameraBounds bounds;
     private CameraLookAhead lookAhead;
 
-    public CameraController(Camera2D camera, GameObject target, double viewportWidth, double viewportHeight) {
+    public CameraController(
+            Camera2D camera,
+            GameObject target,
+            double viewportWidth,
+            double viewportHeight) {
+
         if (camera == null) {
             throw new IllegalArgumentException("camera must not be null.");
         }
+
         validateViewportSize(viewportWidth, viewportHeight);
+
         this.camera = camera;
-        this.target = target;
         this.viewportWidth = viewportWidth;
         this.viewportHeight = viewportHeight;
+        setTarget(target);
     }
 
     @Override
@@ -30,39 +38,17 @@ public final class CameraController implements GameSystem {
         if (target == null) {
             return;
         }
-        if (deadZone != null) {
-            updateDeadZone();
-        } else {
-            updateFollow();
-        }
-        applyBounds();
-    }
 
-    public void updateFollow() {
-        double cameraX = target.getX() - viewportWidth / 2.0;
-        double cameraY = target.getY() - viewportHeight / 2.0;
-        if (lookAhead != null) {
-            lookAhead.update(target);
-            cameraX += lookAhead.getLookAheadX();
-            cameraY += lookAhead.getLookAheadY();
-        }
-        camera.setPosition(cameraX, cameraY);
-    }
-
-    public void updateDeadZone() {
-        deadZone.apply(camera, target);
-    }
-
-    public void applyBounds() {
-        if (bounds != null) {
-            bounds.constrain(camera, viewportWidth, viewportHeight);
-        }
+        updateCameraPosition();
+        constrainToBounds();
     }
 
     public void setTarget(GameObject target) {
         this.target = target;
+        rebuildFollow();
+
         if (lookAhead != null) {
-            lookAhead.resetLookAhead();
+            lookAhead.reset();
         }
     }
 
@@ -74,6 +60,10 @@ public final class CameraController implements GameSystem {
         validateViewportSize(viewportWidth, viewportHeight);
         this.viewportWidth = viewportWidth;
         this.viewportHeight = viewportHeight;
+
+        if (follow != null) {
+            follow.setViewportSize(viewportWidth, viewportHeight);
+        }
     }
 
     public double getViewportWidth() {
@@ -102,6 +92,10 @@ public final class CameraController implements GameSystem {
 
     public void setLookAhead(CameraLookAhead lookAhead) {
         this.lookAhead = lookAhead;
+
+        if (lookAhead != null) {
+            lookAhead.reset();
+        }
     }
 
     public CameraLookAhead getLookAhead() {
@@ -109,19 +103,60 @@ public final class CameraController implements GameSystem {
     }
 
     public void clearDeadZone() {
-        this.deadZone = null;
+        deadZone = null;
     }
 
     public void clearLookAhead() {
-        this.lookAhead = null;
+        lookAhead = null;
     }
 
     public void clearBounds() {
-        this.bounds = null;
+        bounds = null;
     }
 
-    private void validateViewportSize(double viewportWidth, double viewportHeight) {
-        if (viewportWidth <= 0.0 || viewportHeight <= 0.0) {
+    private void updateCameraPosition() {
+        if (deadZone != null) {
+            deadZone.apply(camera, target);
+            return;
+        }
+
+        followTarget();
+    }
+
+    private void followTarget() {
+        if (follow == null) {
+            return;
+        }
+
+        double lookAheadX = 0.0;
+        double lookAheadY = 0.0;
+
+        if (lookAhead != null) {
+            lookAhead.update(target);
+            lookAheadX = lookAhead.getLookAheadX();
+            lookAheadY = lookAhead.getLookAheadY();
+        }
+
+        follow.update(lookAheadX, lookAheadY);
+    }
+
+    private void constrainToBounds() {
+        if (bounds != null) {
+            bounds.constrain(camera, viewportWidth, viewportHeight);
+        }
+    }
+
+    private void rebuildFollow() {
+        if (target == null) {
+            follow = null;
+            return;
+        }
+
+        follow = new CameraFollow(camera, target, viewportWidth, viewportHeight);
+    }
+
+    private void validateViewportSize(double width, double height) {
+        if (width <= 0.0 || height <= 0.0) {
             throw new IllegalArgumentException("Viewport dimensions must be greater than 0.");
         }
     }

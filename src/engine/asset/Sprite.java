@@ -2,12 +2,12 @@ package engine.asset;
 
 import java.awt.image.BufferedImage;
 
-public class Sprite {
+public final class Sprite {
     private final BufferedImage image;
 
     public Sprite(BufferedImage image) {
         if (image == null) {
-            throw new IllegalArgumentException("image must nut be null.");
+            throw new IllegalArgumentException("image must not be null.");
         }
         this.image = image;
     }

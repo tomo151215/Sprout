@@ -4,13 +4,14 @@ import java.awt.Canvas;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferStrategy;
-import java.util.List;
 
-import engine.object.GameObject;
+import engine.graphics.camera.Camera2D;
 
-public class GameRenderer {
+public final class GameRenderer {
+    private static final int BUFFER_COUNT = 3;
+
     private final Canvas canvas;
-    private final BufferStrategy bs;
+    private final BufferStrategy bufferStrategy;
     private final RendererConfig config;
     private final Camera2D camera;
 
@@ -21,64 +22,93 @@ public class GameRenderer {
         if (config == null) {
             throw new IllegalArgumentException("config must not be null.");
         }
+
         this.canvas = canvas;
         this.config = config;
         this.camera = new Camera2D();
-        this.canvas.createBufferStrategy(3);
-        this.bs = this.canvas.getBufferStrategy();
+
+        canvas.createBufferStrategy(BUFFER_COUNT);
+        this.bufferStrategy = canvas.getBufferStrategy();
+
+        if (bufferStrategy == null) {
+            throw new IllegalStateException("Failed to create BufferStrategy.");
+        }
     }
 
-    public void render(List<GameObject> objects, double alpha) {
-        Graphics2D g = (Graphics2D) bs.getDrawGraphics();
+    public void render(Iterable<? extends Renderable> renderables, double alpha) {
+        if (renderables == null) {
+            throw new IllegalArgumentException("renderables must not be null.");
+        }
+
+        do {
+            drawUntilBufferIsStable(renderables, alpha);
+            bufferStrategy.show();
+        } while (bufferStrategy.contentsLost());
+    }
+
+    public Camera2D getCamera() {
+        return camera;
+    }
+
+    private void drawUntilBufferIsStable(Iterable<? extends Renderable> renderables, double alpha) {
+        do {
+            drawFrame(renderables, alpha);
+        } while (bufferStrategy.contentsRestored());
+    }
+
+    private void drawFrame(Iterable<? extends Renderable> renderables, double alpha) {
+        Graphics2D graphics = (Graphics2D) bufferStrategy.getDrawGraphics();
 
         try {
-            clearScreen(g);
-            applyRenderingHints(g);
-            double renderAlpha = config.isInterpolation() ? alpha : 1.0;
-            renderWorld(g, objects, renderAlpha);
-
-            if (config.isDebugRender()) {
-                renderDebug(g);
-            }
+            clearScreen(graphics);
+            applyRenderingHints(graphics);
+            renderWorld(graphics, renderables, renderAlpha(alpha));
         } finally {
-            g.dispose();
+            graphics.dispose();
         }
-        bs.show();
     }
 
-    private void renderDebug(Graphics2D g) {
+    private double renderAlpha(double alpha) {
+        return config.isInterpolation() ? alpha : 1.0;
     }
 
-    private void clearScreen(Graphics2D g) {
-        g.setColor(config.getBackgroundColor());
-        g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+    private void clearScreen(Graphics2D graphics) {
+        graphics.setColor(config.getBackgroundColor());
+        graphics.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
-    private void applyRenderingHints(Graphics2D g) {
-        Object antiAliasingValue = config.isAntiAliasing() ? RenderingHints.VALUE_ANTIALIAS_ON
+    private void applyRenderingHints(Graphics2D graphics) {
+        Object antiAliasingValue = config.isAntiAliasing()
+                ? RenderingHints.VALUE_ANTIALIAS_ON
                 : RenderingHints.VALUE_ANTIALIAS_OFF;
-        g.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING, antiAliasingValue);
+
+        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, antiAliasingValue);
     }
 
-    private void renderWorld(Graphics2D g, List<GameObject> objects, double renderAlpha) {
-        Graphics2D worldGraphics = (Graphics2D) g.create();
+    private void renderWorld(
+            Graphics2D graphics,
+            Iterable<? extends Renderable> renderables,
+            double alpha) {
+
+        Graphics2D worldGraphics = (Graphics2D) graphics.create();
+
         try {
             camera.apply(worldGraphics);
-            for (GameObject o : objects) {
-                Graphics2D objectGraphics = (Graphics2D) worldGraphics.create();
-                try {
-                    o.onDraw(objectGraphics, renderAlpha);
-                } finally {
-                    objectGraphics.dispose();
-                }
+            for (Renderable renderable : renderables) {
+                drawRenderable(worldGraphics, renderable, alpha);
             }
         } finally {
             worldGraphics.dispose();
         }
     }
 
-    public Camera2D getCamera() {
-        return this.camera;
+    private void drawRenderable(Graphics2D worldGraphics, Renderable renderable, double alpha) {
+        Graphics2D objectGraphics = (Graphics2D) worldGraphics.create();
+
+        try {
+            renderable.draw(objectGraphics, alpha);
+        } finally {
+            objectGraphics.dispose();
+        }
     }
 }

@@ -1,8 +1,9 @@
 package engine.asset;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.awt.image.BufferedImage;
+
 import javax.imageio.ImageIO;
 
 public final class ImageLoader {
@@ -10,9 +11,7 @@ public final class ImageLoader {
     }
 
     public static BufferedImage load(String path) {
-        if (path == null || path.isBlank()) {
-            throw new IllegalArgumentException("path must not be null or blank.");
-        }
+        validatePath(path);
 
         try {
             BufferedImage image = ImageIO.read(new File(path));
@@ -27,5 +26,11 @@ public final class ImageLoader {
 
     public static Sprite loadSprite(String path) {
         return new Sprite(load(path));
+    }
+
+    private static void validatePath(String path) {
+        if (path == null || path.isBlank()) {
+            throw new IllegalArgumentException("path must not be null or blank.");
+        }
     }
 }

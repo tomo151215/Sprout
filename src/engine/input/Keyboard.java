@@ -1,88 +1,83 @@
 package engine.input;
 
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.util.BitSet;
 
-public class Keyboard implements KeyListener {
-
-    private static final int KEY_COUNT = 512;
-    private final boolean[] currentPressed = new boolean[KEY_COUNT];
-    private final boolean[] pressed = new boolean[KEY_COUNT];
-    private final boolean[] previousPressed = new boolean[KEY_COUNT];
+public final class Keyboard extends KeyAdapter {
+    private final BitSet currentPressed = new BitSet();
+    private final BitSet pressed = new BitSet();
+    private final BitSet previousPressed = new BitSet();
 
     private final Object lock = new Object();
 
     public void updateSnapshot() {
         synchronized (lock) {
-            System.arraycopy(
-                    pressed,
-                    0,
-                    previousPressed,
-                    0,
-                    KEY_COUNT);
-            System.arraycopy(
-                    currentPressed,
-                    0,
-                    pressed,
-                    0,
-                    KEY_COUNT);
+            copy(pressed, previousPressed);
+            copy(currentPressed, pressed);
         }
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-
+    public void keyPressed(KeyEvent event) {
+        setCurrentState(event.getKeyCode(), true);
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
-        int code = e.getKeyCode();
-        if (isWithinBounds(code)) {
-            synchronized (lock) {
-                currentPressed[code] = true;
-            }
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-        int code = e.getKeyCode();
-        if (isWithinBounds(code)) {
-            synchronized (lock) {
-                currentPressed[code] = false;
-            }
-        }
+    public void keyReleased(KeyEvent event) {
+        setCurrentState(event.getKeyCode(), false);
     }
 
     public void clear() {
         synchronized (lock) {
-            for (int i = 0; i < KEY_COUNT; i++) {
-                currentPressed[i] = false;
-                pressed[i] = false;
-                previousPressed[i] = false;
-            }
+            currentPressed.clear();
+            pressed.clear();
+            previousPressed.clear();
         }
     }
 
     public boolean isPressed(int keyCode) {
-        return isWithinBounds(keyCode) && pressed[keyCode];
+        if (keyCode < 0) {
+            return false;
+        }
+
+        synchronized (lock) {
+            return pressed.get(keyCode);
+        }
     }
 
     public boolean isJustPressed(int keyCode) {
-        if (!isWithinBounds(keyCode)) {
+        if (keyCode < 0) {
             return false;
         }
-        return pressed[keyCode] && !previousPressed[keyCode];
+
+        synchronized (lock) {
+            return pressed.get(keyCode) && !previousPressed.get(keyCode);
+        }
     }
 
     public boolean isJustReleased(int keyCode) {
-        if (!isWithinBounds(keyCode)) {
+        if (keyCode < 0) {
             return false;
         }
-        return !pressed[keyCode] && previousPressed[keyCode];
+
+        synchronized (lock) {
+            return !pressed.get(keyCode) && previousPressed.get(keyCode);
+        }
     }
 
-    private boolean isWithinBounds(int keyCode) {
-        return keyCode >= 0 && keyCode < KEY_COUNT;
+    private void setCurrentState(int keyCode, boolean isPressed) {
+        if (keyCode < 0) {
+            return;
+        }
+
+        synchronized (lock) {
+            currentPressed.set(keyCode, isPressed);
+        }
+    }
+
+    private void copy(BitSet source, BitSet destination) {
+        destination.clear();
+        destination.or(source);
     }
 }

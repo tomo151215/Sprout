@@ -12,12 +12,17 @@ public abstract class Scene {
         }
 
         started = true;
-
         try {
             onStart();
         } catch (RuntimeException | Error e) {
             started = false;
             throw e;
+        }
+    }
+
+    public final void update() {
+        if (started) {
+            onUpdate();
         }
     }
 
@@ -33,25 +38,21 @@ public abstract class Scene {
         }
     }
 
-    public final void update() {
-        if (!started) {
-            return;
-        }
-        onUpdate();
+    public final boolean isStarted() {
+        return started;
     }
 
-    public abstract void onStart();
+    protected abstract void onStart();
 
-    public void onUpdate() {
-    };
+    protected void onUpdate() {
+    }
 
-    public void onEnd() {
-    };
+    protected void onEnd() {
+    }
 
     protected final GameEngine engine() {
         if (engine == null) {
-            throw new IllegalStateException(
-                    "Scene is not attached to an engine.");
+            throw new IllegalStateException("Scene is not attached to an engine.");
         }
         return engine;
     }
@@ -60,10 +61,10 @@ public abstract class Scene {
         if (engine == null) {
             throw new IllegalArgumentException("engine must not be null.");
         }
-        this.engine = engine;
-    }
+        if (this.engine != null && this.engine != engine) {
+            throw new IllegalStateException("Scene is already attached to another engine.");
+        }
 
-    public final boolean isStarted() {
-        return started;
+        this.engine = engine;
     }
 }

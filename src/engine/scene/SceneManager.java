@@ -1,62 +1,41 @@
-
 package engine.scene;
 
 import engine.core.GameEngine;
-import engine.core.GameSystem;
+import engine.system.GameSystem;
 
-public class SceneManager implements GameSystem {
-    private Scene currentScene;
+public final class SceneManager implements GameSystem {
     private final GameEngine engine;
+    private Scene currentScene;
 
     public SceneManager(GameEngine engine) {
         if (engine == null) {
-            throw new IllegalArgumentException("engine must nut be null.");
+            throw new IllegalArgumentException("engine must not be null.");
         }
         this.engine = engine;
     }
 
     @Override
     public void update() {
-        if (currentScene == null) {
-            return;
+        if (currentScene != null) {
+            currentScene.update();
         }
-        currentScene.update();
     }
 
-    public void setScene(Scene scene) {
-        if (scene == null) {
-            throw new IllegalArgumentException(
-                    "scene must not be null.");
+    public void changeScene(Scene nextScene) {
+        if (nextScene == null) {
+            throw new IllegalArgumentException("nextScene must not be null.");
         }
 
-        if (currentScene != null) {
-            try {
-                currentScene.end();
-            } finally {
-                currentScene = null;
-            }
-        }
-
-        currentScene = scene;
-
-        try {
-            currentScene.attach(engine);
-            currentScene.start();
-        } catch (RuntimeException | Error e) {
-            currentScene = null;
-            throw e;
-        }
+        endCurrentScene();
+        startScene(nextScene);
     }
 
     public void endCurrentScene() {
-        if (currentScene == null) {
-            return;
-        }
+        Scene sceneToEnd = currentScene;
+        currentScene = null;
 
-        try {
-            currentScene.end();
-        } finally {
-            currentScene = null;
+        if (sceneToEnd != null) {
+            sceneToEnd.end();
         }
     }
 
@@ -66,5 +45,17 @@ public class SceneManager implements GameSystem {
 
     public boolean hasScene() {
         return currentScene != null;
+    }
+
+    private void startScene(Scene scene) {
+        scene.attach(engine);
+        currentScene = scene;
+
+        try {
+            scene.start();
+        } catch (RuntimeException | Error e) {
+            currentScene = null;
+            throw e;
+        }
     }
 }

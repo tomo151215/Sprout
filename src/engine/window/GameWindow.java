@@ -1,93 +1,56 @@
 package engine.window;
 
+import java.awt.Canvas;
+import java.awt.Dimension;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Objects;
+
 import javax.swing.JFrame;
 
 import engine.core.GameSettings;
 import engine.input.Keyboard;
 import engine.input.Mouse;
 
-import java.awt.Canvas;
-import java.awt.Dimension;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
 public final class GameWindow {
-    private final JFrame frame = new JFrame();
-    private final Canvas canvas = new Canvas();
-    private final GameSettings set;
+    private final GameSettings settings;
     private final Keyboard keyboard;
     private final Mouse mouse;
+    private final Runnable closeRequestHandler;
 
-    public GameWindow(GameSettings set, Keyboard keyboard, Mouse mouse) {
-        this.set = set;
-        this.keyboard = keyboard;
-        this.mouse = mouse;
+    private final JFrame frame;
+    private final Canvas canvas;
 
-        canvas.setPreferredSize(new Dimension(set.getWidth(), set.getHeight()));
-        canvas.addKeyListener(keyboard);
-        canvas.addMouseListener(mouse);
-        canvas.addMouseMotionListener(mouse);
-        canvas.addMouseWheelListener(mouse);
-        canvas.setFocusable(true);
+    public GameWindow(
+            GameSettings settings,
+            Keyboard keyboard,
+            Mouse mouse,
+            Runnable closeRequestHandler) {
 
-        canvas.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e) {
-                GameWindow.this.keyboard.clear();
-                GameWindow.this.mouse.clear();
-            }
-        });
+        this.settings = Objects.requireNonNull(settings, "settings must not be null.");
+        this.keyboard = Objects.requireNonNull(keyboard, "keyboard must not be null.");
+        this.mouse = Objects.requireNonNull(mouse, "mouse must not be null.");
+        this.closeRequestHandler = Objects.requireNonNull(
+                closeRequestHandler,
+                "closeRequestHandler must not be null.");
 
-        canvas.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) {
+        WindowComponents components = SwingExecutor.callAndWait(this::createComponents);
+        this.frame = components.frame();
+        this.canvas = components.canvas();
+    }
+
+    public void open() {
+        SwingExecutor.runAndWait(() -> {
+            frame.setVisible(settings.isVisible());
+
+            if (settings.isVisible()) {
                 requestCanvasFocus();
             }
         });
-
-        frame.setTitle(set.getTitle());
-        frame.setResizable(set.isResizable());
-
-        if (set.isExitOnClose()) {
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        } else {
-            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        }
-
-        frame.addWindowFocusListener(new WindowAdapter() {
-            @Override
-            public void windowLostFocus(WindowEvent e) {
-                GameWindow.this.keyboard.clear();
-                GameWindow.this.mouse.clear();
-            }
-
-            @Override
-            public void windowGainedFocus(WindowEvent e) {
-                requestCanvasFocus();
-            }
-        });
-
-        frame.add(canvas);
-        frame.pack();
-
-        if (set.isCenterOnScreen()) {
-            frame.setLocationRelativeTo(null);
-        }
-    }
-
-    public void show() {
-        frame.setVisible(set.isVisible());
-        if (set.isVisible()) {
-            requestCanvasFocus();
-        }
-    }
-
-    public void requestCanvasFocus() {
-        canvas.requestFocusInWindow();
     }
 
     public Canvas getCanvas() {
@@ -95,6 +58,97 @@ public final class GameWindow {
     }
 
     public void close() {
-        frame.dispose();
+        SwingExecutor.runAndWait(frame::dispose);
+    }
+
+    private WindowComponents createComponents() {
+        JFrame newFrame = new JFrame();
+        Canvas newCanvas = new Canvas();
+
+        configureCanvas(newCanvas);
+        configureFrame(newFrame, newCanvas);
+
+        return new WindowComponents(newFrame, newCanvas);
+    }
+
+    private void configureCanvas(Canvas targetCanvas) {
+        targetCanvas.setPreferredSize(new Dimension(settings.getWidth(), settings.getHeight()));
+        targetCanvas.setFocusable(true);
+
+        targetCanvas.addKeyListener(keyboard);
+        targetCanvas.addMouseListener(mouse);
+        targetCanvas.addMouseMotionListener(mouse);
+        targetCanvas.addMouseWheelListener(mouse);
+
+        targetCanvas.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent event) {
+                clearInputState();
+            }
+        });
+
+        targetCanvas.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent event) {
+                targetCanvas.requestFocusInWindow();
+            }
+        });
+    }
+
+    private void configureFrame(JFrame targetFrame, Canvas targetCanvas) {
+        targetFrame.setTitle(settings.getTitle());
+        targetFrame.setResizable(settings.isResizable());
+        targetFrame.setDefaultCloseOperation(closeOperation());
+        targetFrame.addWindowFocusListener(createWindowFocusListener(targetCanvas));
+        targetFrame.addWindowListener(createWindowCloseListener());
+        targetFrame.add(targetCanvas);
+        targetFrame.pack();
+
+        if (settings.isCenterOnScreen()) {
+            targetFrame.setLocationRelativeTo(null);
+        }
+    }
+
+    private WindowAdapter createWindowFocusListener(Canvas targetCanvas) {
+        return new WindowAdapter() {
+            @Override
+            public void windowLostFocus(WindowEvent event) {
+                clearInputState();
+            }
+
+            @Override
+            public void windowGainedFocus(WindowEvent event) {
+                targetCanvas.requestFocusInWindow();
+            }
+        };
+    }
+
+    private WindowAdapter createWindowCloseListener() {
+        return new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent event) {
+                if (settings.isExitOnClose()) {
+                    closeRequestHandler.run();
+                }
+            }
+        };
+    }
+
+    private int closeOperation() {
+        return settings.isExitOnClose()
+                ? JFrame.EXIT_ON_CLOSE
+                : JFrame.DO_NOTHING_ON_CLOSE;
+    }
+
+    private void requestCanvasFocus() {
+        canvas.requestFocusInWindow();
+    }
+
+    private void clearInputState() {
+        keyboard.clear();
+        mouse.clear();
+    }
+
+    private record WindowComponents(JFrame frame, Canvas canvas) {
     }
 }
