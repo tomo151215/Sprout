@@ -5,24 +5,25 @@ import java.util.concurrent.locks.LockSupport;
 import java.util.function.DoubleConsumer;
 
 public final class GameLoop implements Runnable {
-    private static final double NANOSECONDS_PER_SECOND = 1_000_000_000.0;
+    private static final long NANOSECONDS_PER_SECOND = 1_000_000_000L;
     private static final int MAX_UPDATES_PER_FRAME = 5;
-    private static final long IDLE_PARK_NANOS = 1_000_000L;
     private static final String THREAD_NAME = "game-loop";
 
-    private final double nanosecondsPerUpdate;
+    private final long nanosecondsPerUpdate;
+    private final long nanosecondsPerFrame;
     private final Runnable updateAction;
     private final DoubleConsumer renderAction;
 
     private volatile boolean running;
     private Thread loopThread;
 
-    public GameLoop(int targetUps, Runnable updateAction, DoubleConsumer renderAction) {
+    public GameLoop(int targetUps, int targetFps, Runnable updateAction, DoubleConsumer renderAction) {
         if (targetUps <= 0) {
             throw new IllegalArgumentException("targetUps must be greater than 0.");
         }
 
         this.nanosecondsPerUpdate = NANOSECONDS_PER_SECOND / targetUps;
+        this.nanosecondsPerFrame = targetFps > 0 ? NANOSECONDS_PER_SECOND / targetFps : 0L;
         this.updateAction = Objects.requireNonNull(updateAction, "updateAction must not be null.");
         this.renderAction = Objects.requireNonNull(renderAction, "renderAction must not be null.");
     }
@@ -58,51 +59,64 @@ public final class GameLoop implements Runnable {
 
     private void runLoop() {
         long lastTime = System.nanoTime();
-        double accumulator = 0.0;
+        long accumulator = 0L;
 
         while (running) {
             long now = System.nanoTime();
-            accumulator += now - lastTime;
+            long frameTime = now - lastTime;
             lastTime = now;
 
-            accumulator = runPendingUpdates(accumulator);
+            accumulator += frameTime;
 
-            if (!running) {
+            boolean isRunning = running;
+            int updateCount = 0;
+
+            while (isRunning && accumulator >= nanosecondsPerUpdate && updateCount < MAX_UPDATES_PER_FRAME) {
+                updateAction.run();
+                accumulator -= nanosecondsPerUpdate;
+                updateCount++;
+                isRunning = running;
+            }
+
+            if (updateCount == MAX_UPDATES_PER_FRAME && accumulator >= nanosecondsPerUpdate) {
+                accumulator %= nanosecondsPerUpdate;
+            }
+
+            if (!isRunning) {
                 return;
             }
 
-            renderAction.accept(accumulator / nanosecondsPerUpdate);
-            LockSupport.parkNanos(IDLE_PARK_NANOS);
+            double alpha = (double) accumulator / nanosecondsPerUpdate;
+            renderAction.accept(alpha);
+
+            syncFrame(now);
         }
     }
 
-    private double runPendingUpdates(double accumulator) {
-        int updateCount = 0;
-
-        while (shouldUpdate(accumulator, updateCount)) {
-            updateAction.run();
-            accumulator -= nanosecondsPerUpdate;
-            updateCount++;
+    private void syncFrame(long frameStartTime) {
+        if (nanosecondsPerFrame <= 0) {
+            Thread.yield();
+            return;
         }
 
-        return discardExcessLag(accumulator, updateCount);
-    }
+        long targetTime = frameStartTime + nanosecondsPerFrame;
 
-    private boolean shouldUpdate(double accumulator, int updateCount) {
-        return running
-                && accumulator >= nanosecondsPerUpdate
-                && updateCount < MAX_UPDATES_PER_FRAME;
-    }
+        while (true) {
+            long now = System.nanoTime();
+            long remaining = targetTime - now;
 
-    private double discardExcessLag(double accumulator, int updateCount) {
-        boolean updateLimitReached = updateCount == MAX_UPDATES_PER_FRAME;
-        boolean atLeastOneUpdateStillPending = accumulator >= nanosecondsPerUpdate;
+            if (remaining <= 0) {
+                break;
+            }
 
-        if (updateLimitReached && atLeastOneUpdateStillPending) {
-            return accumulator % nanosecondsPerUpdate;
+            if (remaining > 2_000_000L) {
+                LockSupport.parkNanos(1_000_000L);
+            } else if (remaining > 10_000L) {
+                Thread.yield();
+            } else {
+                Thread.onSpinWait();
+            }
         }
-
-        return accumulator;
     }
 
     private boolean isLoopThreadAlive() {
