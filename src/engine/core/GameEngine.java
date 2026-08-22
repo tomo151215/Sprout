@@ -43,7 +43,7 @@ public final class GameEngine {
 
         this.window = new GameWindow(settings, keyboard, mouse, this::requestStop);
         this.renderer = new GameRenderer(window.getCanvas(), rendererConfig);
-        this.loop = new GameLoop(targetUps, this::update, this::render);
+        this.loop = new GameLoop(targetUps, 120, this::update, this::render);
 
         this.sceneManager = new SceneManager(this);
         this.audioManager = new AudioManager();
@@ -137,8 +137,15 @@ public final class GameEngine {
 
     private void update() {
         updateInput();
+        cameraSnapshot();
         updateObjects();
         updateSystems();
+    }
+
+    private void cameraSnapshot() {
+        renderer
+                .getCamera()
+                .savePreviousPosition();
     }
 
     private void updateInput() {

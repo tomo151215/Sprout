@@ -15,12 +15,7 @@ public final class CameraController implements GameSystem {
     private CameraBounds bounds;
     private CameraLookAhead lookAhead;
 
-    public CameraController(
-            Camera2D camera,
-            GameObject target,
-            double viewportWidth,
-            double viewportHeight) {
-
+    public CameraController(Camera2D camera, GameObject target, double viewportWidth, double viewportHeight) {
         if (camera == null) {
             throw new IllegalArgumentException("camera must not be null.");
         }

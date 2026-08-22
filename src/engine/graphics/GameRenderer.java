@@ -93,7 +93,7 @@ public final class GameRenderer {
         Graphics2D worldGraphics = (Graphics2D) graphics.create();
 
         try {
-            camera.apply(worldGraphics);
+            camera.apply(worldGraphics, alpha);
             for (Renderable renderable : renderables) {
                 drawRenderable(worldGraphics, renderable, alpha);
             }

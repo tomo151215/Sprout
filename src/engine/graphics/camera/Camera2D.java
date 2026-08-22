@@ -3,8 +3,11 @@ package engine.graphics.camera;
 import java.awt.Graphics2D;
 
 public final class Camera2D {
+
     private double x;
     private double y;
+    private double previousX;
+    private double previousY;
 
     public Camera2D() {
         this(0.0, 0.0);
@@ -13,6 +16,8 @@ public final class Camera2D {
     public Camera2D(double x, double y) {
         this.x = x;
         this.y = y;
+        this.previousX = x;
+        this.previousY = y;
     }
 
     public double getX() {
@@ -21,6 +26,14 @@ public final class Camera2D {
 
     public double getY() {
         return y;
+    }
+
+    public double getPreviousX() {
+        return previousX;
+    }
+
+    public double getPreviousY() {
+        return previousY;
     }
 
     public void setPosition(double x, double y) {
@@ -33,11 +46,18 @@ public final class Camera2D {
         y += deltaY;
     }
 
-    public void apply(Graphics2D graphics) {
+    public void savePreviousPosition() {
+        previousX = x;
+        previousY = y;
+    }
+
+    public void apply(Graphics2D graphics, double alpha) {
         if (graphics == null) {
             throw new IllegalArgumentException("graphics must not be null.");
         }
-        graphics.translate(-x, -y);
+        double renderX = lerp(previousX, x, alpha);
+        double renderY = lerp(previousY, y, alpha);
+        graphics.translate(-renderX, -renderY);
     }
 
     public double screenToWorldX(double screenX) {
@@ -54,5 +74,9 @@ public final class Camera2D {
 
     public double worldToScreenY(double worldY) {
         return worldY - y;
+    }
+
+    private double lerp(double start, double end, double alpha) {
+        return start + (end - start) * alpha;
     }
 }
