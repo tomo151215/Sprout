@@ -277,7 +277,7 @@ public GameEngine(GameSettings settings, int targetUps, RendererConfig rendererC
     if (rendererConfig == null) {
         throw new IllegalArgumentException("rendererConfig must not be null.");
     }
-    this.setttings = settings;
+    this.settings = settings;
     this.keyboard = new Keyboard();
     this.mouse = new Mouse();
     this.window = new GameWindow(settings, keyboard, mouse);

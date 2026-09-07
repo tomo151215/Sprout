@@ -353,7 +353,7 @@ GameEngineにMouseを追加します。また、ゲーム側から使えるよ�
 private final Mouse mouse;
 ...
 public GameEngine(GameSettings settings, int targetUps) {
-    this.setttings = settings;
+    this.settings = settings;
     this.keyboard = new Keyboard();
     this.mouse = new Mouse();
     this.window = new GameWindow(settings, keyboard, mouse);

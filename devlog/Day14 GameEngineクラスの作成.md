@@ -73,7 +73,7 @@ GameEngineクラスを実装します。
 
 ```java
 public class GameEngine {
-    private final GameSettings setttings;
+    private final GameSettings settings;
     private final Keyboard keyboard;
     private final GameWindow window;
     private final GameRenderer renderer;
@@ -82,7 +82,7 @@ public class GameEngine {
     private final List<GameObject> updateObjects = new ArrayList<>();
 
     public GameEngine(GameSettings settings, int targetUps) {
-        this.setttings = settings;
+        this.settings = settings;
         this.keyboard = new Keyboard();
         this.window = new GameWindow(settings, keyboard);
         this.renderer = new GameRenderer(window.getCanvas());
@@ -108,8 +108,8 @@ public class GameEngine {
         renderObjects.remove(object);
     }
 
-    public GameSettings getSetttings() {
-        return setttings;
+    public GameSettings getsettings() {
+        return settings;
     }
 
     public Keyboard getKeyboard() {
@@ -190,8 +190,8 @@ public void stop() {
 ### getterを用意する
 ゲーム側から一部の部品を取得できるようにします。
 ```java
-    public GameSettings getSetttings() {
-        return setttings;
+    public GameSettings getsettings() {
+        return settings;
     }
 
     public Keyboard getKeyboard() {
