@@ -1,4 +1,4 @@
-# GameLoopとinputSystemの連携
+# Day10: GameLoopとinputSystemの連携
 
 ## keyPressedにゲーム内の処理を書いてはいけない
 keyPressedに以下のようなコードを書いてはいけません。
